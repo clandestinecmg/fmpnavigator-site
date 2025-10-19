@@ -1,26 +1,46 @@
+/* app/globals.css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* --- Theme tokens --- */
+:root{
+  --bg:#0a1426;      /* deep navy */
+  --card:#0e182d;    /* card bg */
+  --border:#1c2a45;  /* subtle border */
+  --text:#e6edf5;    /* primary text */
+  --gold:#f1c40f;    /* accent */
+  --blue:#2e90ff;    /* CTA */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+html, body { height: 100% }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- Reusable UI --- */
+.btn{ @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition; }
+.btn-primary{ @apply bg-[var(--blue)] text-white hover:opacity-90 shadow-lg; }
+.btn-ghost{ @apply border border-[var(--border)] bg-[var(--card)] hover:bg-[#14213a]; }
+.card{ @apply rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5; }
+.h1{ @apply text-4xl md:text-6xl font-extrabold leading-tight; }
+.h2{ @apply text-2xl md:text-3xl font-bold; }
+.muted{ @apply text-[#cfd8e6]; }
+.small{ @apply text-xs text-[#9fb0cc]; }
+.link-underline{ @apply underline decoration-[var(--blue)] underline-offset-4 hover:opacity-90; }
+
+/* --- Subtle elevation + focus --- */
+.elevate { box-shadow: 0 10px 30px rgba(0,0,0,.35) }
+.focus-ring { @apply outline-none ring-2 ring-[var(--blue)] ring-offset-0; }
+
+/* --- Keyframes & Animations --- */
+@keyframes floatUp { from { transform: translateY(8px); opacity:.0 } to { transform: translateY(0); opacity:1 } }
+@keyframes glow { 0%,100%{ box-shadow:0 0 0 rgba(46,144,255,0)} 50%{ box-shadow:0 0 32px rgba(46,144,255,.18)} }
+.fade-in { animation: floatUp .6s ease-out both; }
+.glow { animation: glow 2.4s ease-in-out infinite; }
+
+/* --- Radial hero background helper --- */
+.hero-bg {
+  background: radial-gradient(1200px 600px at 10% 0%, #0e182d 20%, transparent 60%);
 }
