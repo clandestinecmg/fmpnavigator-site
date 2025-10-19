@@ -1,59 +1,70 @@
 // app/layout.tsx
-import "./globals.css";
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
-export const metadata = {
-  title: "FMP Navigator",
-  description: "Helping U.S. Veterans Overseas navigate the VA Foreign Medical Program",
+export const metadata: Metadata = {
+  title: {
+    default: 'FMP Navigator',
+    template: '%s · FMP Navigator',
+  },
+  description:
+    'Helping U.S. Veterans Overseas navigate the VA Foreign Medical Program.',
+  metadataBase: new URL('https://fmpnavigator.org'),
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: 'FMP Navigator',
+    description:
+      'Helping U.S. Veterans Overseas navigate the VA Foreign Medical Program.',
+    url: 'https://fmpnavigator.org',
+    siteName: 'FMP Navigator',
+    type: 'website',
+  },
+  icons: { icon: '/favicon.ico' },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const viewport: Viewport = {
+  themeColor: '#0a1426',
+  colorScheme: 'dark',
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const year = new Date().getFullYear();
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
-        {/* Header / Nav */}
-        <header className="sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-black/20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-            <a href="/" className="group flex items-center gap-3">
-              <div className="h-9 w-9 rounded-full bg-[var(--gold)] grid place-items-center shadow-md glow">
-                <img src="/favicon.ico" alt="Compass" className="h-5 w-5" />
-              </div>
-              <span className="font-semibold tracking-tight group-hover:opacity-90 transition">
-                FMP Navigator
-              </span>
-            </a>
-            <nav className="hidden md:flex items-center gap-6 text-sm text-[#cfd8e6]">
-              <a href="/about" className="hover:text-white">About</a>
-              <a href="/app" className="hover:text-white">The App</a>
-              <a href="/advocacy" className="hover:text-white">Advocacy</a>
-              <a href="/resources" className="hover:text-white">Resources</a>
-              <a href="/contact" className="hover:text-white">Contact</a>
-            </nav>
-            <div className="flex items-center gap-3">
-              <a href="/contact" className="btn btn-ghost">Get Updates</a>
-              <a href="/contact" className="btn btn-primary elevate">Join Waitlist</a>
-            </div>
-          </div>
-          <div className="h-px w-full bg-gradient-to-r from-transparent via-[var(--border)] to-transparent" />
-        </header>
+        {/* Skip link for keyboard/screen readers */}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus-ring absolute left-2 top-2 z-[100] rounded bg-[var(--card)] px-3 py-2"
+        >
+          Skip to content
+        </a>
+
+        <Header />
 
         {/* Status bar */}
-        <div className="w-full bg-[#14213a] border-b border-[var(--border)] text-center py-2 px-4 small">
-          <strong>Status:</strong> Public site is live. The mobile app is currently under repair—join the waitlist for updates.
+        <div
+          role="status"
+          className="w-full bg-[#14213a] border-b border-[var(--border)] text-center py-2 px-4 small"
+        >
+          <strong>Status:</strong>{' '}
+          Public site is live. The mobile app is currently under repair—join the
+          waitlist for updates.
         </div>
 
         {/* Page content */}
-        <main className="min-h-[70vh]">{children}</main>
+        <main id="main" role="main" className="min-h-[70vh]">
+          {children}
+        </main>
 
-        {/* Footer */}
-        <footer className="border-t border-[var(--border)] py-8 mt-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-3 small">
-            <div>© {new Date().getFullYear()} FMP Navigator — Veteran-founded. All rights reserved.</div>
-            <div className="flex items-center gap-4">
-              <a href="/privacy" className="hover:text-white">Privacy</a>
-              <a href="/terms" className="hover:text-white">Terms</a>
-            </div>
-          </div>
-        </footer>
+        <Footer year={year} />
       </body>
     </html>
   );

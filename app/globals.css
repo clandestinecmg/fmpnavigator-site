@@ -2,13 +2,13 @@
 @import "tailwindcss";
 
 /* --- Theme tokens --- */
-:root{
-  --bg:#0a1426;      /* deep navy */
-  --card:#0e182d;    /* card bg */
-  --border:#1c2a45;  /* subtle border */
-  --text:#e6edf5;    /* primary text */
-  --gold:#f1c40f;    /* accent */
-  --blue:#2e90ff;    /* CTA */
+:root {
+  --bg: #0a1426;       /* deep navy */
+  --card: #0e182d;     /* card bg */
+  --border: #1c2a45;   /* subtle border */
+  --text: #e6edf5;     /* primary text */
+  --gold: #f1c40f;     /* accent */
+  --blue: #2e90ff;     /* CTA */
 }
 
 html, body { height: 100% }
@@ -20,27 +20,48 @@ body {
 }
 
 /* --- Reusable UI --- */
-.btn{ @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition; }
-.btn-primary{ @apply bg-[var(--blue)] text-white hover:opacity-90 shadow-lg; }
-.btn-ghost{ @apply border border-[var(--border)] bg-[var(--card)] hover:bg-[#14213a]; }
-.card{ @apply rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5; }
-.h1{ @apply text-4xl md:text-6xl font-extrabold leading-tight; }
-.h2{ @apply text-2xl md:text-3xl font-bold; }
-.muted{ @apply text-[#cfd8e6]; }
-.small{ @apply text-xs text-[#9fb0cc]; }
-.link-underline{ @apply underline decoration-[var(--blue)] underline-offset-4 hover:opacity-90; }
+.btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition; }
+.btn-primary { @apply bg-[var(--blue)] text-white hover:opacity-90 shadow-lg; }
+.btn-ghost { @apply border border-[var(--border)] bg-[var(--card)] hover:bg-[#14213a]; }
+.btn:disabled { @apply opacity-50 cursor-not-allowed; }
+.btn:focus-visible { @apply outline-none ring-2 ring-[var(--blue)] ring-offset-0; }
 
-/* --- Subtle elevation + focus --- */
-.elevate { box-shadow: 0 10px 30px rgba(0,0,0,.35) }
-.focus-ring { @apply outline-none ring-2 ring-[var(--blue)] ring-offset-0; }
+.card { @apply rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5; }
+.h1 { @apply text-4xl md:text-6xl font-extrabold leading-tight; }
+.h2 { @apply text-2xl md:text-3xl font-bold; }
+.muted { @apply text-[#cfd8e6]; }
+.small { @apply text-xs text-[#9fb0cc]; }
+.link-underline { @apply underline decoration-[var(--blue)] underline-offset-4 hover:opacity-90; }
+
+/* --- Subtle elevation --- */
+.elevate { box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 
 /* --- Keyframes & Animations --- */
-@keyframes floatUp { from { transform: translateY(8px); opacity:.0 } to { transform: translateY(0); opacity:1 } }
-@keyframes glow { 0%,100%{ box-shadow:0 0 0 rgba(46,144,255,0)} 50%{ box-shadow:0 0 32px rgba(46,144,255,.18)} }
+@keyframes floatUp { from { transform: translateY(8px); opacity: .0 } to { transform: translateY(0); opacity: 1 } }
+@keyframes glow { 0%,100% { box-shadow: 0 0 0 rgba(46,144,255,0) } 50% { box-shadow: 0 0 32px rgba(46,144,255,.18) } }
 .fade-in { animation: floatUp .6s ease-out both; }
 .glow { animation: glow 2.4s ease-in-out infinite; }
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .fade-in, .glow { animation: none !important; }
+}
 
 /* --- Radial hero background helper --- */
 .hero-bg {
   background: radial-gradient(1200px 600px at 10% 0%, #0e182d 20%, transparent 60%);
 }
+
+/* --- Accessibility & layout helpers --- */
+
+/* Screen-reader only, becomes visible when focused (used by skip links) */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
+}
+
+/* Reusable focus ring utility for non-button elements */
+.focus-ring { @apply outline-none ring-2 ring-[var(--blue)] ring-offset-0; }
+
+/* Consistent page container spacing */
+.container { @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
