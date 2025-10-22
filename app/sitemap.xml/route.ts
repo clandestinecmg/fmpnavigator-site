@@ -1,10 +1,10 @@
 // app/sitemap.xml/route.ts
 export async function GET() {
-  const base = "https://fmpnavigator.org";
-  const pages = ["", "/about", "/app", "/advocacy", "/resources", "/contact", "/privacy", "/terms", "/updates"];
-  const urls = pages.map(
-    (p) => `<url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`
-  ).join("");
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://fmpnavigator.org";
+  const pages = ["", "/about", "/app", "/resources", "/contact", "/privacy", "/terms", "/updates", "/providers"];
+  const urls = pages
+    .map((p) => `<url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>`)
+    .join("");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>`;

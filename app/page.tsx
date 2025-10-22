@@ -14,24 +14,25 @@ export default function Home() {
           </h1>
           <p className="mt-5 muted md:text-lg">
             SEA-based, veteran-founded. We connect you to FMP providers, direct-billing hospitals, and crisis
-            resources—so you can get the care you earned.
+            resources — so you can get the care you earned.
           </p>
+
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/contact" className="btn btn-primary elevate">Join the Waitlist</Link>
-            <Link href="/resources" className="btn btn-ghost">View Resources</Link>
+            <Link href="/contact" className="btn btn-primary elevate">Join the waitlist</Link>
+            <Link href="/resources" className="btn btn-ghost">View resources</Link>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 small">
-            <span className="inline-flex items-center gap-1">
+          <ul className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 small">
+            <li className="inline-flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--blue)]" /> SEA-based
-            </span>
-            <span className="inline-flex items-center gap-1">
+            </li>
+            <li className="inline-flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--blue)]" /> Veteran-founded
-            </span>
-            <span className="inline-flex items-center gap-1">
+            </li>
+            <li className="inline-flex items-center gap-1">
               <span className="h-1.5 w-1.5 rounded-full bg-[var(--blue)]" /> Nonprofit-leaning mission
-            </span>
-          </div>
+            </li>
+          </ul>
         </div>
 
         {/* Feature / value grid */}
@@ -47,7 +48,7 @@ export default function Home() {
             },
             {
               title: "Claims & Checklists",
-              body: "What to prepare, how to file, and common pitfalls to avoid—no fluff.",
+              body: "What to prepare, how to file, and common pitfalls to avoid — no fluff.",
             },
             {
               title: "Crisis Resources",
@@ -62,9 +63,9 @@ export default function Home() {
               body: "Sign up for verified provider additions, policy changes, and regional alerts.",
             },
           ].map((x, i) => (
-            <article key={i} className="card hover:border-[var(--blue)]/60 transition fade-in">
+            <article key={i} className="card hover:border-[var(--accent)]/60 transition fade-in">
               <h3 className="font-semibold">{x.title}</h3>
-              <p className="mt-1 text-sm text-[#9fb0cc]">{x.body}</p>
+              <p className="mt-1 text-sm text-[var(--muted-2)]">{x.body}</p>
             </article>
           ))}
         </div>
@@ -72,12 +73,14 @@ export default function Home() {
         {/* CTA bar */}
         <div className="mt-16 card flex items-center justify-between gap-4 flex-col md:flex-row">
           <div>
-            <h2 className="h2">Ready to help—join the waitlist</h2>
-            <p className="mt-1 small">We’ll notify you when the mobile app is ready and share new provider data.</p>
+            <h2 className="h2">Ready to help — join the waitlist</h2>
+            <p className="mt-1 small">
+              We’ll notify you when the mobile app is ready and share new provider data.
+            </p>
           </div>
           <div className="flex gap-3">
-            <Link href="/contact" className="btn btn-primary elevate">Join Waitlist</Link>
-            <Link href="/advocacy" className="btn btn-ghost">Partner with Us</Link>
+            <Link href="/contact" className="btn btn-primary elevate">Join waitlist</Link>
+            <Link href="/resources" className="btn btn-ghost">Explore resources</Link>
           </div>
         </div>
       </div>

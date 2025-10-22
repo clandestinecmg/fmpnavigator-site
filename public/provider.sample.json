@@ -1,0 +1,22 @@
+[
+  {
+    "id": "p001",
+    "name": "Sunrise Clinic",
+    "lat": 13.7563,
+    "lng": 100.5018,
+    "country": "TH",
+    "city": "Bangkok",
+    "phone": "+66 2 123 4567",
+    "notes": "Direct-billing, English-speaking"
+  },
+  {
+    "id": "p002",
+    "name": "Pacific Health Center",
+    "lat": 16.0471,
+    "lng": 108.206,
+    "country": "VN",
+    "city": "Da Nang",
+    "phone": "+84 236 3 456 789",
+    "notes": "Direct-billing"
+  }
+]

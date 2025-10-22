@@ -1,3 +1,4 @@
+// app/global-error.tsx
 "use client";
 
 import * as Sentry from "@sentry/nextjs";
@@ -10,12 +11,9 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
   }, [error]);
 
   return (
-    <html>
-      <body>
-        {/* `NextError` is the default Next.js error page component. Its type
-        definition requires a `statusCode` prop. However, since the App Router
-        does not expose status codes for errors, we simply pass 0 to render a
-        generic error message. */}
+    <html lang="en">
+      <body className="min-h-dvh container py-10">
+        {/* NextError requires a statusCode but App Router doesn’t expose it. */}
         <NextError statusCode={0} />
       </body>
     </html>

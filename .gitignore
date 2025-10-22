@@ -1,8 +1,12 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ==========================================================
+#  FMP Navigator — Hardened .gitignore
+#  Prevents leaks of credentials, env files, and secrets
+# ==========================================================
 
-# dependencies
-/node_modules
-/.pnp
+# === Core dependencies ===
+node_modules/
+.pnpm-store/
+.pnp/
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -10,38 +14,99 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
+# === Next.js & build artifacts ===
+.next/
+out/
+build/
+dist/
+.vercel/
+.cache/
 *.tsbuildinfo
 next-env.d.ts
 
-# Firebase CLI logs
-firebase-debug.log
+# === Coverage & testing ===
+coverage/
+jest-coverage/
+*.lcov
+cypress/videos/
+cypress/screenshots/
 
-# Sentry Config File
+# === Logs & debugging ===
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+firebase-debug.log
+*.log
+*.pid
+*.seed
+
+# === Environment & secrets (critical section) ===
+# Absolutely never commit these.
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.test
 .env.sentry-build-plugin
+*.pem
+*.key
+*.crt
+*.p12
+*.cer
+
+# === OS / Editor junk ===
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json  # optional keep if sharing recs
+*.swp
+*.swo
+*.bak
+*.tmp
+*~
+
+# === Firebase & Google configs ===
+.firebaserc
+.firebase/
+firebase-debug.log
+serviceAccountKey.json
+google-services.json
+GoogleService-Info.plist
+
+# === Sentry / Analytics / Tooling ===
+.sentryclirc
+.sentry-build-plugin
+.env.sentry-build-plugin
+
+# === Misc build caches ===
+.eslintcache
+.stylelintcache
+.prettier-cache
+*.lock
+
+# === OS-generated & archives ===
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+
+# === Local tools & data ===
+/tmp
+/data
+/secrets
+/private
+/local
+/backups
+notes.txt
+
+# ==========================================================
+# Notes:
+# - .env* covers both .env and .env.local to protect API keys.
+# - Firebase admin key (.pem, .json) is blacklisted.
+# - .vercel/ ignored so project link tokens aren’t exposed.
+# - .vscode settings excluded except for recommended extension hints.
+# ==========================================================
+.vercel
