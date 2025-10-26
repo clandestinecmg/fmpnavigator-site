@@ -2,11 +2,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * CONTACT API — production-grade
- * - Validates input (name, email, message, token)
- * - Verifies reCAPTCHA v3 on the server
- * - Sends email via EmailJS with PRIVATE bearer key
- * - Resilient to network failures (timeouts, structured errors)
+ * CONTACT API — hardened
+ * - Validates input (name, email, subject, message, token)
+ * - Verifies reCAPTCHA v3 on the server (with local bypass option)
+ * - Sends email via EmailJS using PRIVATE bearer key
+ * - Defensive timeouts & structured error responses
+ *
+ * Required env:
+ *  - RECAPTCHA_SECRET_KEY
+ *  - NEXT_PUBLIC_EMAILJS_SERVICE_ID
+ *  - NEXT_PUBLIC_EMAILJS_TEMPLATE_ID
+ *  - EMAILJS_PRIVATE_KEY
+ * Optional env (dev):
+ *  - DEV_RECAPTCHA_BYPASS=1   // lets local client send "dev-bypass" as token
  */
 
 export const runtime = 'nodejs';
@@ -15,19 +23,20 @@ export const dynamic = 'force-dynamic';
 type ContactBody = {
   name: string;
   email: string;
+  subject: string;
   message: string;
   token: string;
+  // NOTE: Attachments are NOT forwarded to EmailJS REST here.
+  // If needed in the future, upload to Storage and pass a URL in template_params.
 };
 
 type EmailJsSendPayload = {
   service_id: string;
   template_id: string;
-  user_id?: string;
-  accessToken?: string;
   template_params: Record<string, string>;
 };
 
-function getEnv(name: string): string {
+function mustEnv(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`[contact] Missing env: ${name}`);
   return v;
@@ -61,9 +70,7 @@ async function fetchWithTimeout(
 
 function getClientIp(req: NextRequest): string | undefined {
   const fwd = req.headers.get('x-forwarded-for');
-  if (fwd && fwd.length > 0) {
-    return fwd.split(',')[0]!.trim();
-  }
+  if (fwd && fwd.length > 0) return fwd.split(',')[0]!.trim();
   return undefined;
 }
 
@@ -72,23 +79,26 @@ export async function POST(req: NextRequest) {
     req.headers.get('x-vercel-id') ||
     Math.random().toString(36).slice(2, 10);
 
-  // Read and *narrow* envs locally so TS knows they’re plain strings
-  const RECAPTCHA_SECRET = getEnv('RECAPTCHA_SECRET_KEY');
-  const EMAILJS_SERVICE_ID = getEnv('NEXT_PUBLIC_EMAILJS_SERVICE_ID');
-  const EMAILJS_TEMPLATE_ID = getEnv('NEXT_PUBLIC_EMAILJS_TEMPLATE_ID');
-  const EMAILJS_PRIVATE_KEY = getEnv('EMAILJS_PRIVATE_KEY');
+  // Narrow envs once so TS treats them as non-optional strings
+  const RECAPTCHA_SECRET = mustEnv('RECAPTCHA_SECRET_KEY');
+  const EMAILJS_SERVICE_ID = mustEnv('NEXT_PUBLIC_EMAILJS_SERVICE_ID');
+  const EMAILJS_TEMPLATE_ID = mustEnv('NEXT_PUBLIC_EMAILJS_TEMPLATE_ID');
+  const EMAILJS_PRIVATE_KEY = mustEnv('EMAILJS_PRIVATE_KEY');
 
   try {
-    const body = (await req.json()) as Partial<ContactBody>;
-    const name = (body.name || '').trim();
-    const email = (body.email || '').trim();
-    const message = (body.message || '').trim();
-    const token = (body.token || '').trim();
+    const raw = (await req.json()) as Partial<ContactBody>;
+    const name = (raw.name || '').trim();
+    const email = (raw.email || '').trim();
+    const subject = (raw.subject || '').trim();
+    const message = (raw.message || '').trim();
+    const token = (raw.token || '').trim();
 
     if (!name || name.length < 2)
       return jsonError(400, 'BAD_NAME', 'Please provide your full name.');
     if (!email || !/^\S+@\S+\.\S+$/.test(email))
       return jsonError(400, 'BAD_EMAIL', 'Please provide a valid email address.');
+    if (!subject || subject.length < 3)
+      return jsonError(400, 'BAD_SUBJECT', 'Please include a subject.');
     if (!message || message.length < 10)
       return jsonError(400, 'BAD_MESSAGE', 'Please include a longer message.');
     if (!token)
@@ -97,48 +107,60 @@ export async function POST(req: NextRequest) {
     const ip = getClientIp(req);
     const ua = req.headers.get('user-agent') || '';
 
-    // --- Verify reCAPTCHA ---
-    const form = new URLSearchParams();
-    form.set('secret', RECAPTCHA_SECRET);
-    form.set('response', token);
-    if (ip) form.set('remoteip', ip);
+    // --- Verify reCAPTCHA (allow local bypass) ---
+    const allowBypass =
+      process.env.NODE_ENV !== 'production' &&
+      (process.env.DEV_RECAPTCHA_BYPASS === '1');
 
-    let recaptchaJson: any;
-    try {
-      const resp = await fetchWithTimeout(
-        'https://www.google.com/recaptcha/api/siteverify',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: form.toString(),
-          timeout: 8000,
-        }
-      );
-      recaptchaJson = await resp.json();
-    } catch (e: any) {
-      console.error('[contact][recaptcha][network]', { requestId, err: String(e) });
-      return jsonError(502, 'RECAPTCHA_UNREACHABLE', 'reCAPTCHA verification failed.');
-    }
+    let score = 0;
+    if (allowBypass && token === 'dev-bypass') {
+      score = 0.9;
+    } else {
+      const form = new URLSearchParams();
+      form.set('secret', RECAPTCHA_SECRET);
+      form.set('response', token);
+      if (ip) form.set('remoteip', ip);
 
-    const success = !!recaptchaJson?.success;
-    const score = Number(recaptchaJson?.score ?? 0);
-    if (!success || score < 0.4) {
-      console.warn('[contact][recaptcha][denied]', { requestId, ip, score });
-      return jsonError(400, 'RECAPTCHA_FAILED', 'reCAPTCHA verification failed.', { score });
+      let recaptchaJson: any;
+      try {
+        const resp = await fetchWithTimeout(
+          'https://www.google.com/recaptcha/api/siteverify',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: form.toString(),
+            timeout: 8000,
+          }
+        );
+        recaptchaJson = await resp.json();
+      } catch (e: any) {
+        console.error('[contact][recaptcha][network]', { requestId, err: String(e) });
+        return jsonError(502, 'RECAPTCHA_UNREACHABLE', 'reCAPTCHA verification failed.');
+      }
+
+      const success = !!recaptchaJson?.success;
+      score = Number(recaptchaJson?.score ?? 0);
+      if (!success || score < 0.4) {
+        console.warn('[contact][recaptcha][denied]', { requestId, ip, score });
+        return jsonError(400, 'RECAPTCHA_FAILED', 'reCAPTCHA verification failed.', { score });
+      }
     }
 
     // --- Send Email via EmailJS (Bearer key) ---
+    // NOTE: Attachments are not sent here; include basic metadata inside the message if needed.
     const payload: EmailJsSendPayload = {
       service_id: EMAILJS_SERVICE_ID,
       template_id: EMAILJS_TEMPLATE_ID,
       template_params: {
         from_name: name,
         from_email: email,
+        subject,
         message,
         user_agent: ua,
         ip: ip ?? '',
         request_id: requestId,
         submitted_at: new Date().toISOString(),
+        recaptcha_score: String(score),
       },
     };
 

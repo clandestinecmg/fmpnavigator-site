@@ -1,50 +1,38 @@
 // scripts/enrich-places.ts
 /**
- * Enrich providers with canonical Google Maps identity (place_id, name, address, url, phone, lat/lng).
- * - Reads: data/providers.json (array of Provider)
- * - Writes: data/providers.enriched.json (unless --out specifies another file)
+ * Enrich providers with Google Places identity (Place ID, canonical name/address/phone, exact geometry).
  *
  * Usage:
- *   tsx scripts/enrich-places.ts [--out data/providers.enriched.json] [--only id1,id2]
- *                                [--country-bias PH] [--force] [--overwrite-geo]
- *                                [--dry-run]
+ *   tsx scripts/enrich-places.ts --in data/providers.json --out data/providers.enriched.json --country-bias=PH,TH
  *
- * Env:
- *   GOOGLE_MAPS_SERVER_KEY (preferred)
- *   or NEXT_PUBLIC_MAPS_API_KEY (fallback for quick testing)
- *
- * Notes on exactOptionalPropertyTypes:
- *   - Optional fields explicitly allow `| undefined` where we assign `undefined`.
- *   - When we construct objects, we avoid including properties that are `undefined`
- *     unless the type includes them explicitly.
+ * Notes:
+ *  - Requires env: MAPS_SERVER_API_KEY
+ *  - Uses Places API (New) text search + details (v1).
+ *  - Writes an array of providers with a `gmaps` object (only for rows we could enrich).
  */
 
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-/* =========================
-   Types (strict & explicit)
-   ========================= */
+type LatLng = { lat: number; lng: number };
 
-export type LatLng = { lat: number; lng: number };
-
-export type GmapsMeta = {
+type GmapsMeta = {
   placeId?: string | undefined;
-  url?: string | undefined;
+  url?: string | undefined; // googleMapsUri
   formattedName?: string | undefined;
   formattedAddress?: string | undefined;
   internationalPhone?: string | undefined;
   location?: LatLng | undefined;
 };
 
-export type Provider = {
+type Provider = {
   id: string;
   name: string;
   country: string;
   city: string;
   regionTag?: string | undefined;
-  phone?: string | undefined; // existing phone from your data
+  phone?: string | undefined;
   policy?: string | undefined;
   caution?: string | undefined;
   lat?: number | undefined;
@@ -53,286 +41,258 @@ export type Provider = {
 };
 
 type CliFlags = {
-  out?: string | null | undefined;
-  force?: boolean | undefined;
-  overwriteGeo?: boolean | undefined;
+  inPath: string;
+  outPath: string;
+  countryBias?: string | undefined; // e.g., "PH,TH"
+  only?: string | undefined;        // CSV of ids to process
   dryRun?: boolean | undefined;
-  countryBias?: string | undefined;
-  /** comma-separated ids to restrict the run */
-  only?: string[] | undefined;
+  overwriteGeo?: boolean | undefined; // (merge handles actual geo overwrite)
+  force?: boolean | undefined;      // re-enrich even if placeId already exists
 };
-
-type FindPlaceCandidate = {
-  place_id: string;
-  name?: string;
-  formatted_address?: string;
-  geometry?: { location?: { lat?: number; lng?: number } };
-};
-
-type FindPlaceResponse = {
-  status: string;
-  candidates?: FindPlaceCandidate[];
-  error_message?: string;
-};
-
-type PlaceDetailsResult = {
-  place_id?: string;
-  name?: string;
-  formatted_address?: string;
-  international_phone_number?: string;
-  url?: string;
-  geometry?: { location?: { lat?: number; lng?: number } };
-};
-
-type PlaceDetailsResponse = {
-  status: string;
-  result?: PlaceDetailsResult;
-  error_message?: string;
-};
-
-/* =========================
-   CLI parsing
-   ========================= */
 
 function parseFlags(argv: string[]): CliFlags {
-  const flags: CliFlags = {
-    out: null,
-    force: false,
-    overwriteGeo: false,
-    dryRun: false,
-    countryBias: undefined,
-    only: undefined,
-  };
+  let inPath = "";
+  let outPath = "";
+  let countryBias: string | undefined;
+  let only: string | undefined;
+  let dryRun = false;
+  let overwriteGeo = false;
+  let force = false;
 
-  for (let i = 2; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === "--force") flags.force = true;
-    else if (a === "--dry-run") flags.dryRun = true;
-    else if (a === "--overwrite-geo") flags.overwriteGeo = true;
-    else if (a === "--out") {
-      const v = argv[i + 1];
-      if (!v) throw new Error("--out requires a path");
-      flags.out = v;
-      i++;
-    } else if (a === "--country-bias") {
-      const v = argv[i + 1];
-      if (!v) throw new Error("--country-bias requires a value like PH or TH");
-      flags.countryBias = v;
-      i++;
-    } else if (a === "--only") {
-      const v = argv[i + 1];
-      if (!v) throw new Error("--only requires a comma-separated list of ids");
-      flags.only = v.split(",").map((s) => s.trim()).filter(Boolean);
-      i++;
+  // Safe cursor-based parsing; never touches possibly-undefined values
+  let i = 2;
+  const takeNext = (flag: string): string => {
+    const v = argv[i + 1];
+    if (typeof v !== "string" || v.length === 0) {
+      throw new Error(`${flag} requires a value`);
     }
+    i += 1;
+    return v;
+  };
+
+  while (i < argv.length) {
+    const aRaw = argv[i];
+    const a = typeof aRaw === "string" ? aRaw : "";
+
+    if (a === "--in") {
+      inPath = takeNext("--in");
+    } else if (a === "--out") {
+      outPath = takeNext("--out");
+    } else if (a.startsWith("--country-bias")) {
+      const v = a.includes("=") ? a.split("=", 2)[1] : takeNext("--country-bias");
+      countryBias = v || undefined;
+    } else if (a === "--only") {
+      only = takeNext("--only");
+    } else if (a === "--dry-run") {
+      dryRun = true;
+    } else if (a === "--overwrite-geo") {
+      overwriteGeo = true;
+    } else if (a === "--force") {
+      force = true;
+    }
+    i += 1;
   }
 
-  return flags;
+  if (!inPath) throw new Error("Missing --in path to providers JSON");
+  if (!outPath) throw new Error("Missing --out path for enriched JSON");
+
+  const resolved: CliFlags = {
+    inPath: path.isAbsolute(inPath) ? inPath : path.join(process.cwd(), inPath),
+    outPath: path.isAbsolute(outPath) ? outPath : path.join(process.cwd(), outPath),
+    countryBias,
+    only,
+    dryRun,
+    overwriteGeo,
+    force,
+  };
+  return resolved;
 }
 
-/* =========================
-   Google helpers (classic WS)
-   ========================= */
+const API_KEY = process.env.MAPS_SERVER_API_KEY || "";
+if (!API_KEY) {
+  console.error("[enrich] Missing env MAPS_SERVER_API_KEY");
+  process.exit(1);
+}
 
-function getServerMapsKey(): string {
-  const k =
-    process.env.GOOGLE_MAPS_SERVER_KEY || process.env.NEXT_PUBLIC_MAPS_API_KEY;
-  if (!k) {
-    throw new Error(
-      "Missing GOOGLE_MAPS_SERVER_KEY (preferred) or NEXT_PUBLIC_MAPS_API_KEY"
-    );
+async function searchText(query: string, countryBias?: string) {
+  // Places API (New): POST https://places.googleapis.com/v1/places:searchText
+  const body: any = {
+    textQuery: query,
+    maxResultCount: 5
+  };
+
+  // Optionally bias to a single regionCode (Google supports one here)
+  if (countryBias) {
+    const first = countryBias.split(",").map(s => s.trim()).filter(Boolean)[0];
+    if (first) body.regionCode = first;
   }
-  return k;
-}
 
-// Conservative sleep to avoid hammering quota (tune as needed)
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-async function findPlaceIdByText(
-  key: string,
-  textQuery: string,
-  countryBias?: string | undefined
-): Promise<FindPlaceCandidate | undefined> {
-  // Using "findplacefromtext" for robust text lookup
-  const params = new URLSearchParams({
-    input: textQuery,
-    inputtype: "textquery",
-    fields: "place_id,name,formatted_address,geometry",
-    key,
+  const resp = await fetch("https://places.googleapis.com/v1/places:searchText", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Goog-Api-Key": API_KEY,
+      "X-Goog-FieldMask":
+        "places.id,places.displayName,places.formattedAddress,places.location,places.googleMapsUri,places.internationalPhoneNumber"
+    },
+    body: JSON.stringify(body)
   });
 
-  // Region/country bias via "components"
-  if (countryBias) params.set("components", `country:${countryBias}`);
-
-  const url = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?${params.toString()}`;
-  const res = await fetch(url);
-  const json = (await res.json()) as FindPlaceResponse;
-
-  if (json.status !== "OK" || !json.candidates || json.candidates.length === 0) {
-    return undefined;
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`searchText error ${resp.status}: ${t}`);
   }
-  return json.candidates[0];
+
+  const json = await resp.json();
+  return (json?.places ?? []) as Array<{
+    id?: string;
+    displayName?: { text?: string };
+    formattedAddress?: string;
+    location?: { latitude?: number; longitude?: number };
+    googleMapsUri?: string;
+    internationalPhoneNumber?: string;
+  }>;
 }
 
-async function getPlaceDetails(
-  key: string,
-  placeId: string
-): Promise<PlaceDetailsResult | undefined> {
-  const params = new URLSearchParams({
-    place_id: placeId,
-    key,
-    fields:
-      "place_id,name,formatted_address,international_phone_number,url,geometry",
+async function getDetails(placeId: string) {
+  // Places API (New): GET /v1/places/{placeId}
+  const fields =
+    "id,displayName,formattedAddress,location,googleMapsUri,internationalPhoneNumber";
+  const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(
+    placeId
+  )}?fields=${encodeURIComponent(fields)}`;
+
+  const resp = await fetch(url, {
+    headers: { "X-Goog-Api-Key": API_KEY }
   });
 
-  const url = `https://maps.googleapis.com/maps/api/place/details/json?${params.toString()}`;
-  const res = await fetch(url);
-  const json = (await res.json()) as PlaceDetailsResponse;
-
-  if (json.status !== "OK" || !json.result) return undefined;
-  return json.result;
-}
-
-/* =========================
-   Data helpers
-   ========================= */
-
-function providerTextQuery(p: Provider): string {
-  // Try to form a stable query
-  // Example: "Bangkok Hospital Chiang Mai, Chiang Mai, TH"
-  const parts = [p.name];
-  if (p.city) parts.push(p.city);
-  if (p.regionTag) parts.push(p.regionTag);
-  parts.push(p.country);
-  return parts.filter(Boolean).join(", ");
-}
-
-/**
- * Build a new GmapsMeta from Place Details (skip undefined properties unless
- * the type explicitly allows them).
- */
-function gmapsFromDetails(d: PlaceDetailsResult): GmapsMeta {
-  const meta: GmapsMeta = {};
-  if (d.place_id) meta.placeId = d.place_id;
-  if (d.name) meta.formattedName = d.name;
-  if (d.formatted_address) meta.formattedAddress = d.formatted_address;
-  if (d.international_phone_number)
-    meta.internationalPhone = d.international_phone_number;
-  if (d.url) meta.url = d.url;
-
-  const lat = d.geometry?.location?.lat;
-  const lng = d.geometry?.location?.lng;
-  if (typeof lat === "number" && typeof lng === "number") {
-    meta.location = { lat, lng };
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`getDetails error ${resp.status}: ${t}`);
   }
 
-  return meta;
-}
-
-function applyGeo(
-  p: Provider,
-  meta: GmapsMeta,
-  overwriteGeo: boolean | undefined
-): Provider {
-  // Only set lat/lng if we have a location and either overwriteGeo is true or the provider lacks coords.
-  const loc = meta.location;
-  const hasLoc = !!loc && typeof loc.lat === "number" && typeof loc.lng === "number";
-
-  if (!hasLoc) {
-    // No new geometry; just return with gmaps merged.
-    return { ...p, gmaps: { ...(p.gmaps ?? {}), ...meta } };
-  }
-
-  const alreadyHasGeo =
-    typeof p.lat === "number" && typeof p.lng === "number";
-
-  if (alreadyHasGeo && !overwriteGeo) {
-    return { ...p, gmaps: { ...(p.gmaps ?? {}), ...meta } };
-  }
-
-  return {
-    ...p,
-    lat: loc!.lat,
-    lng: loc!.lng,
-    gmaps: { ...(p.gmaps ?? {}), ...meta },
+  return (await resp.json()) as {
+    id?: string;
+    displayName?: { text?: string };
+    formattedAddress?: string;
+    location?: { latitude?: number; longitude?: number };
+    googleMapsUri?: string;
+    internationalPhoneNumber?: string;
   };
 }
 
-/* =========================
-   Main
-   ========================= */
+function composeQuery(p: Provider) {
+  const parts = [p.name, p.city, p.country].filter(Boolean);
+  return parts.join(", ");
+}
+
+function toGmapsMeta(
+  d:
+    | {
+        id?: string;
+        displayName?: { text?: string };
+        formattedAddress?: string;
+        location?: { latitude?: number; longitude?: number };
+        googleMapsUri?: string;
+        internationalPhoneNumber?: string;
+      }
+    | undefined
+): GmapsMeta | undefined {
+  if (!d?.id) return undefined;
+  const location =
+    typeof d.location?.latitude === "number" && typeof d.location?.longitude === "number"
+      ? { lat: d.location.latitude, lng: d.location.longitude }
+      : undefined;
+
+  const g: GmapsMeta = {};
+  if (d.id) g.placeId = d.id;
+  if (d.googleMapsUri) g.url = d.googleMapsUri;
+  if (d.displayName?.text) g.formattedName = d.displayName.text;
+  if (d.formattedAddress) g.formattedAddress = d.formattedAddress;
+  if (d.internationalPhoneNumber) g.internationalPhone = d.internationalPhoneNumber;
+  if (location) g.location = location;
+  return g;
+}
+
+async function enrichOne(
+  p: Provider,
+  countryBias?: string,
+  force?: boolean
+): Promise<Provider> {
+  if (p.gmaps?.placeId && !force) return p;
+
+  const query = composeQuery(p);
+  const candidates = await searchText(query, countryBias);
+  const best = candidates[0];
+
+  let details:
+    | {
+        id?: string;
+        displayName?: { text?: string };
+        formattedAddress?: string;
+        location?: { latitude?: number; longitude?: number };
+        googleMapsUri?: string;
+        internationalPhoneNumber?: string;
+      }
+    | undefined;
+
+  if (best?.id) {
+    details = await getDetails(best.id);
+  }
+
+  const meta = toGmapsMeta(details ?? best);
+  if (!meta) return p;
+
+  const next: Provider = {
+    id: p.id,
+    name: p.name,
+    country: p.country,
+    city: p.city,
+    ...(p.regionTag !== undefined ? { regionTag: p.regionTag } : {}),
+    ...(p.phone !== undefined ? { phone: p.phone } : {}),
+    ...(p.policy !== undefined ? { policy: p.policy } : {}),
+    ...(p.caution !== undefined ? { caution: p.caution } : {}),
+    ...(p.lat !== undefined ? { lat: p.lat } : {}),
+    ...(p.lng !== undefined ? { lng: p.lng } : {}),
+    gmaps: { ...(p.gmaps ?? {}), ...meta }
+  };
+
+  return next;
+}
 
 async function main() {
   const flags = parseFlags(process.argv);
-  const key = getServerMapsKey();
+  const onlyIds = flags.only?.split(",").map((s) => s.trim()).filter(Boolean);
 
-  const inputPath = path.join(process.cwd(), "data", "providers.json");
-  const outputPath =
-    flags.out && flags.out.length > 0
-      ? path.isAbsolute(flags.out)
-        ? flags.out
-        : path.join(process.cwd(), flags.out)
-      : path.join(process.cwd(), "data", "providers.enriched.json");
-
-  const raw = await readFile(inputPath, "utf8");
+  const raw = await readFile(flags.inPath, "utf8");
   const providers = JSON.parse(raw) as Provider[];
 
-  const onlySet =
-    flags.only && flags.only.length > 0 ? new Set(flags.only) : null;
-
-  const updated: Provider[] = [];
+  const out: Provider[] = [];
   for (const p of providers) {
-    if (onlySet && !onlySet.has(p.id)) {
-      updated.push(p);
+    if (onlyIds && !onlyIds.includes(p.id)) {
+      out.push(p);
       continue;
     }
-
-    // Skip if we already have a placeId and not forcing
-    if (!flags.force && p.gmaps?.placeId) {
-      updated.push(p);
-      continue;
+    try {
+      const enriched = await enrichOne(p, flags.countryBias, flags.force);
+      out.push(enriched);
+    } catch (e: any) {
+      console.warn("[enrich] failed", p.id, String(e));
+      out.push(p);
     }
-
-    const textQuery = providerTextQuery(p);
-    console.log(`\n[enrich] Searching: ${p.id} → "${textQuery}"`);
-
-    const found = await findPlaceIdByText(key, textQuery, flags.countryBias);
-    if (!found?.place_id) {
-      console.warn(`[enrich] No candidate found for ${p.id}`);
-      updated.push(p);
-      await sleep(120); // gentle
-      continue;
-    }
-
-    console.log(`[enrich] Found place_id=${found.place_id}`);
-
-    const details = await getPlaceDetails(key, found.place_id);
-    if (!details) {
-      console.warn(`[enrich] Details not found for ${p.id}`);
-      updated.push(p);
-      await sleep(120);
-      continue;
-    }
-
-    const meta = gmapsFromDetails(details);
-    const merged = applyGeo(p, meta, flags.overwriteGeo);
-    updated.push(merged);
-
-    // Throttle a bit between calls
-    await sleep(180);
   }
 
   if (flags.dryRun) {
-    console.log("\n[dry-run] Would write enriched providers to:", outputPath);
+    console.log(JSON.stringify(out, null, 2));
     return;
   }
 
-  await mkdir(path.dirname(outputPath), { recursive: true });
-  await writeFile(outputPath, JSON.stringify(updated, null, 2), "utf8");
-  console.log(`\n[done] Wrote ${updated.length} records → ${outputPath}`);
+  await mkdir(path.dirname(flags.outPath), { recursive: true });
+  await writeFile(flags.outPath, JSON.stringify(out, null, 2), "utf8");
+  console.log(`[enrich] wrote ${out.length} records → ${flags.outPath}`);
 }
 
 main().catch((err) => {
-  console.error("[enrich-places] fatal:", err);
+  console.error("[enrich] fatal:", err);
   process.exit(1);
 });

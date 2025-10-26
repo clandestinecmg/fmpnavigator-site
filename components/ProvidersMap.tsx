@@ -67,10 +67,11 @@ function loadGoogleMapsScript({
   }
 
   const params = new URLSearchParams({
-    key: apiKey,
-    v,
-    libraries: libraries.join(','),
-  });
+  key: apiKey,
+  v,
+  libraries: libraries.join(','),
+  loading: 'async',          
+});
   const script = document.createElement('script');
   script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
   script.async = true;

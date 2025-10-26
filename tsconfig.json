@@ -6,7 +6,7 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "preserve",
-    "verbatimModuleSyntax": true,
+
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -17,6 +17,7 @@
     "forceConsistentCasingInFileNames": true,
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
+    "verbatimModuleSyntax": true,
 
     "baseUrl": ".",
     "paths": { "@/*": ["./*"] },

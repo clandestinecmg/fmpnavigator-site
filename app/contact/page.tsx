@@ -2,8 +2,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 
-type Attachment = { filename: string; content: string | null }; // data:*/*;base64,...
 type FormState =
   | { status: 'idle' }
   | { status: 'submitting' }
@@ -12,25 +12,19 @@ type FormState =
 
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '';
 
+/** Load & execute reCAPTCHA v3 */
 function useRecaptcha(siteKey: string) {
-  const loadedRef = useRef(false);
-
   useEffect(() => {
     if (!siteKey || typeof window === 'undefined') return;
 
-    if ((window as any).grecaptcha?.execute) {
-      loadedRef.current = true;
-      return;
-    }
-    const existing = document.querySelector<HTMLScriptElement>('script[data-recaptcha="1"]');
-    if (existing) return;
+    if ((window as any).grecaptcha?.execute) return;
+    if (document.querySelector('script[data-recaptcha="1"]')) return;
 
     const s = document.createElement('script');
     s.src = `https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(siteKey)}`;
     s.async = true;
     s.defer = true;
     s.dataset.recaptcha = '1';
-    s.onload = () => { loadedRef.current = true; };
     document.head.appendChild(s);
   }, [siteKey]);
 
@@ -45,14 +39,12 @@ function useRecaptcha(siteKey: string) {
         const id = setInterval(() => {
           tries++;
           if ((window as any).grecaptcha?.ready) { clearInterval(id); go(); }
-          else if (tries > 40) { clearInterval(id); resolve(); }
+          else if (tries > 60) { clearInterval(id); resolve(); }
         }, 100);
       }
     });
 
-    const token = await (window as any).grecaptcha.execute(siteKey, { action });
-    if (!token) throw new Error('Failed to obtain reCAPTCHA token');
-    return token;
+    return await (window as any).grecaptcha.execute(siteKey, { action });
   };
 
   return { execute };
@@ -60,8 +52,6 @@ function useRecaptcha(siteKey: string) {
 
 export default function ContactPage() {
   const [state, setState] = useState<FormState>({ status: 'idle' });
-  const [fileName, setFileName] = useState<string>('');
-  const [fileDataUrl, setFileDataUrl] = useState<string | null>(null);
   const recaptcha = useRecaptcha(SITE_KEY);
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -70,16 +60,6 @@ export default function ContactPage() {
   const messageRef = useRef<HTMLTextAreaElement>(null);
 
   const disabled = useMemo(() => state.status === 'submitting', [state.status]);
-
-  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.currentTarget.files?.[0];
-    if (!f) { setFileName(''); setFileDataUrl(null); return; }
-    setFileName(f.name);
-    const reader = new FileReader();
-    reader.onload = () => setFileDataUrl(reader.result as string);
-    reader.onerror = () => setFileDataUrl(null);
-    reader.readAsDataURL(f);
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -102,84 +82,120 @@ export default function ContactPage() {
     try {
       setState({ status: 'submitting' });
 
-      // In dev with DEV_RECAPTCHA_BYPASS=1 you can replace with "dev-bypass"
-      const token = await recaptcha.execute('contact');
-
-      const attachment: Attachment | null = fileDataUrl
-        ? { filename: fileName, content: fileDataUrl }
-        : null;
+      // Local dev bypass if DEV_RECAPTCHA_BYPASS=1 (server honors token "dev-bypass")
+      const token =
+        process.env.NODE_ENV !== 'production' &&
+        process.env.NEXT_PUBLIC_SITE_URL?.includes('localhost') &&
+        process.env.DEV_RECAPTCHA_BYPASS === '1'
+          ? 'dev-bypass'
+          : await recaptcha.execute('contact');
 
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, name, email, subject, message, attachment }),
+        body: JSON.stringify({ token, name, email, subject, message }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Failed to send message');
+      if (!res.ok) throw new Error(data?.error?.message || 'Failed to send message');
 
       setState({ status: 'success' });
       if (nameRef.current) nameRef.current.value = '';
       if (emailRef.current) emailRef.current.value = '';
       if (subjectRef.current) subjectRef.current.value = '';
       if (messageRef.current) messageRef.current.value = '';
-      setFileName(''); setFileDataUrl(null);
     } catch (err: any) {
       setState({ status: 'error', message: err?.message || 'Something went wrong' });
     }
   }
 
   return (
-    <section className="container py-10">
-      <h1 className="h1 mb-4">Contact</h1>
-      <p className="mb-6 muted">Send us a message. We’ll get back as soon as we can.</p>
+    <section className="relative overflow-hidden">
+      {/* Decorative patriotic hero */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(800px 300px at 10% -10%, rgba(14,165,233,0.10), transparent 60%), radial-gradient(600px 250px at 90% 0%, rgba(220,38,38,0.10), transparent 60%)',
+        }}
+      />
+      <div className="container py-12">
+        <div className="grid gap-8 md:grid-cols-[1.1fr_.9fr] items-start">
+          {/* Left: Hero copy */}
+          <div className="fade-in">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card-2)] px-3 py-1 small">
+              <span className="inline-block h-4 w-6 overflow-hidden rounded-sm ring-1 ring-[var(--border)]">
+                <Image src="/file.svg" alt="" width={24} height={16} />
+              </span>
+              U.S. Veterans Overseas
+            </div>
 
-      <form onSubmit={onSubmit} className="max-w-2xl space-y-4" noValidate>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="name" className="label">Name</label>
-            <input id="name" ref={nameRef} type="text" autoComplete="name" required className="input" disabled={disabled} />
+            <h1 className="h1 mt-3">Contact FMP Navigator</h1>
+            <p className="mt-3 text-lg text-[var(--muted-foreground)]">
+              We’re here to help you navigate direct-billing care abroad. Send us a note—no question is too small.
+            </p>
+
+            {/* Branch badges */}
+            <div className="mt-6 flex flex-wrap gap-2">
+              {['Army','Navy','Air Force','Marines','Coast Guard','Space Force'].map((b) => (
+                <span key={b} className="rounded-full bg-[var(--card)] border border-[var(--border)] px-3 py-1 small">
+                  {b}
+                </span>
+              ))}
+            </div>
+
+            {/* Assurance card */}
+            <div className="card mt-6">
+              <p className="text-sm">
+                We typically reply within 1–2 business days. Your information is protected by reCAPTCHA and used only to respond to your inquiry.
+              </p>
+            </div>
           </div>
-          <div>
-            <label htmlFor="email" className="label">Email</label>
-            <input id="email" ref={emailRef} type="email" autoComplete="email" required className="input" disabled={disabled} />
-          </div>
-        </div>
 
-        <div>
-          <label htmlFor="subject" className="label">Subject</label>
-          <input id="subject" ref={subjectRef} type="text" required className="input" disabled={disabled} />
-        </div>
+          {/* Right: Form */}
+          <form onSubmit={onSubmit} className="card fade-in elevate" noValidate>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="name" className="label">Name</label>
+                <input id="name" ref={nameRef} type="text" autoComplete="name" required className="input" disabled={disabled} />
+              </div>
+              <div>
+                <label htmlFor="email" className="label">Email</label>
+                <input id="email" ref={emailRef} type="email" autoComplete="email" required className="input" disabled={disabled} />
+              </div>
+            </div>
 
-        <div>
-          <label htmlFor="message" className="label">Message</label>
-          <textarea id="message" ref={messageRef} required rows={6} className="textarea" disabled={disabled} />
-        </div>
+            <div className="mt-4">
+              <label htmlFor="subject" className="label">Subject</label>
+              <input id="subject" ref={subjectRef} type="text" required className="input" disabled={disabled} />
+            </div>
 
-        <div>
-          <label htmlFor="file" className="label">Attachment (optional)</label>
-          <input id="file" type="file" onChange={onFileChange} className="block text-sm" disabled={disabled} />
-          {fileName ? <p className="small mt-1">Selected: <span className="font-medium">{fileName}</span></p> : null}
-        </div>
+            <div className="mt-4">
+              <label htmlFor="message" className="label">Message</label>
+              <textarea id="message" ref={messageRef} required rows={6} className="textarea" disabled={disabled} />
+            </div>
 
-        <div className="pt-2 flex items-center gap-3">
-          <button type="submit" className="btn btn-primary" disabled={disabled}>
-            {state.status === 'submitting' ? 'Sending…' : 'Send message'}
-          </button>
-          {state.status === 'success' && (
-            <span role="status" className="small text-green-400">Sent! We’ll reply soon.</span>
-          )}
-          {state.status === 'error' && (
-            <span role="alert" className="small text-red-400">{state.message}</span>
-          )}
-        </div>
+            <div className="mt-6 flex items-center gap-3">
+              <button type="submit" className="btn btn-primary" disabled={disabled}>
+                {state.status === 'submitting' ? 'Sending…' : 'Send message'}
+              </button>
+              {state.status === 'success' && (
+                <span role="status" className="small text-green-600">Sent! We’ll reply soon.</span>
+              )}
+              {state.status === 'error' && (
+                <span role="alert" className="small text-red-600">{state.message}</span>
+              )}
+            </div>
 
-        <p className="small muted">
-          This site is protected by reCAPTCHA and the Google{' '}
-          <a className="link-underline" href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and{' '}
-          <a className="link-underline" href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.
-        </p>
-      </form>
+            <p className="small muted mt-6">
+              This site is protected by reCAPTCHA and the Google{' '}
+              <a className="link-underline" href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and{' '}
+              <a className="link-underline" href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> apply.
+            </p>
+          </form>
+        </div>
+      </div>
     </section>
   );
 }
