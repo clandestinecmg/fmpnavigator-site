@@ -36,7 +36,7 @@ function useRecaptcha(siteKey: string) {
 
   const execute = async (action: string): Promise<string> => {
     if (!siteKey) throw new Error('Missing NEXT_PUBLIC_RECAPTCHA_SITE_KEY');
-    // wait for grecaptcha.ready
+
     await new Promise<void>((resolve) => {
       const go = () => (window as any).grecaptcha.ready(() => resolve());
       if ((window as any).grecaptcha?.ready) go();
@@ -49,6 +49,7 @@ function useRecaptcha(siteKey: string) {
         }, 100);
       }
     });
+
     const token = await (window as any).grecaptcha.execute(siteKey, { action });
     if (!token) throw new Error('Failed to obtain reCAPTCHA token');
     return token;
@@ -101,6 +102,7 @@ export default function ContactPage() {
     try {
       setState({ status: 'submitting' });
 
+      // In dev with DEV_RECAPTCHA_BYPASS=1 you can replace with "dev-bypass"
       const token = await recaptcha.execute('contact');
 
       const attachment: Attachment | null = fileDataUrl
@@ -130,9 +132,7 @@ export default function ContactPage() {
   return (
     <section className="container py-10">
       <h1 className="h1 mb-4">Contact</h1>
-      <p className="mb-6 muted">
-        Send us a message. We’ll get back as soon as we can.
-      </p>
+      <p className="mb-6 muted">Send us a message. We’ll get back as soon as we can.</p>
 
       <form onSubmit={onSubmit} className="max-w-2xl space-y-4" noValidate>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

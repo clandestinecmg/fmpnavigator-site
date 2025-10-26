@@ -20,6 +20,15 @@ export const viewport: Viewport = {
   themeColor: '#14213a',
 };
 
+// Always-visible Under Construction banner (no client-only APIs used)
+function UnderConstructionBanner() {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-[100] bg-yellow-400 text-black text-center py-3 px-4 shadow-md border-b border-yellow-600">
+      🚧 <span className="font-semibold">FMP Navigator Website Under Construction</span> — some pages and forms may be temporarily unavailable while we finalize the build.
+    </div>
+  );
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const year = new Date().getFullYear();
 
@@ -29,25 +38,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Accessibility: skip to content */}
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus-ring absolute left-2 top-2 z-[100] rounded bg-[var(--card)] px-3 py-2"
+          className="sr-only focus:not-sr-only focus-ring absolute left-2 top-2 z-[101] rounded bg-[var(--card)] px-3 py-2"
         >
           Skip to content
         </a>
 
-        {/* Global client-side context/providers (Auth, etc.) */}
-        <ClientRoot>
-          <Header />
+        {/* Always-visible site-wide notice */}
+        <UnderConstructionBanner />
 
-          <main
-            id="main"
-            role="main"
-            className="container mx-auto px-4 py-6"
-          >
-            {children}
-          </main>
+        {/* Add top padding so the fixed banner doesn't overlap header/content */}
+        <div className="pt-16">
+          {/* Global client-side context/providers (Auth, etc.) */}
+          <ClientRoot>
+            <Header />
 
-          <Footer year={year} />
-        </ClientRoot>
+            <main
+              id="main"
+              role="main"
+              className="container mx-auto px-4 py-6"
+            >
+              {children}
+            </main>
+
+            <Footer year={year} />
+          </ClientRoot>
+        </div>
       </body>
     </html>
   );

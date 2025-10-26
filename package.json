@@ -2,10 +2,17 @@
   "name": "fmpnavigator-site",
   "version": "0.1.0",
   "private": true,
+  "description": "FMP Navigator website – Next.js App Router + Firebase + Google Maps",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
-    "start": "next start"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
+    "providers:enrich:ph": "tsx scripts/enrich-places.ts --country-bias PH --out data/providers.enriched.json",
+    "providers:enrich:th": "tsx scripts/enrich-places.ts --country-bias TH --out data/providers.enriched.json",
+    "providers:merge": "tsx scripts/merge-providers.ts --enriched data/providers.enriched.json --out data/providers.final.json",
+    "providers:merge:geo": "tsx scripts/merge-providers.ts --enriched data/providers.enriched.json --out data/providers.final.json --overwrite-geo"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -25,6 +32,10 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4.1.14",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
