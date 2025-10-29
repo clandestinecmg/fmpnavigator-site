@@ -110,3 +110,19 @@ notes.txt
 # - .vscode settings excluded except for recommended extension hints.
 # ==========================================================
 .vercel
+# Secrets
+.env
+.env.local
+.env*.backup
+# Builds
+.next
+# Misc
+node_modules
+# Secrets
+.env
+.env.local
+.env*.backup
+# Builds
+.next
+# Misc
+node_modules
