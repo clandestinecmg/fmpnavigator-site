@@ -2,11 +2,14 @@
   "compilerOptions": {
     "ignoreDeprecations": "5.0",
     "target": "ES2022",
-    "lib": ["dom", "dom.iterable", "es2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "es2022"
+    ],
     "module": "esnext",
     "moduleResolution": "bundler",
-    "jsx": "preserve",
-
+    "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -18,12 +21,21 @@
     "exactOptionalPropertyTypes": true,
     "noUncheckedIndexedAccess": true,
     "verbatimModuleSyntax": true,
-
     "baseUrl": ".",
-    "paths": { "@/*": ["./*"] },
-
-    "plugins": [{ "name": "next" }],
-    "types": ["@types/google.maps", "node"],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "types": [
+      "@types/google.maps",
+      "node"
+    ],
     "allowJs": true
   },
   "include": [
@@ -31,7 +43,11 @@
     "**/*.tsx",
     "declarations.d.ts",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", ".next"]
+  "exclude": [
+    "node_modules",
+    ".next"
+  ]
 }

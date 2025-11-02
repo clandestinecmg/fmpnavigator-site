@@ -6,7 +6,6 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-
     "providers:enrich": "tsx scripts/enrich-places.ts --in data/providers.json --out data/providers.enriched.json --country-bias=PH,TH",
     "providers:enrich:ph": "tsx scripts/enrich-places.ts --in data/providers.json --out data/providers.enriched.json --country-bias=PH",
     "providers:enrich:th": "tsx scripts/enrich-places.ts --in data/providers.json --out data/providers.enriched.json --country-bias=TH",
@@ -16,13 +15,14 @@
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@googlemaps/js-api-loader": "^2.0.1",
     "@sentry/nextjs": "^10.20.0",
     "clsx": "^2.1.1",
     "firebase": "^12.4.0",
     "firebase-admin": "^13.5.0",
-    "next": "15.5.6",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "react-google-recaptcha": "^3.1.0"
   },
   "devDependencies": {
@@ -31,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "local-ssl-proxy": "^2.0.5",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"

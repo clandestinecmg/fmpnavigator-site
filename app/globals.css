@@ -1,99 +1,133 @@
-/* app/globals.css */
+/* app/globals.css
+   Tailwind v4 + custom design tokens. No unsupported utilities (e.g., border-border).
+   Focus: patriotic palette, ADA-contrast, clean components, no JS animations.
+*/
 @import "tailwindcss";
 
 /* =========================
-   Design tokens — Light UI
+   Design tokens — Patriotic Light UI
    ========================= */
-:root {
-  --background: #f8fafc;          /* slate-50 */
-  --card: #ffffff;                 /* white */
-  --card-2: #f1f5f9;               /* slate-100 */
-  --border: #e2e8f0;               /* slate-200 */
-  --foreground: #0f172a;           /* slate-900 */
-  --muted-foreground: #334155;     /* slate-700 */
-  --muted-2: #64748b;              /* slate-500 */
-  --brand: #0ea5e9;                /* sky-500 */
-  --brand-600: #0284c7;            /* sky-600 */
-  --accent: #16a34a;               /* green-600 */
-  --warn: #d97706;                 /* amber-600 */
-  --shadow: 0 10px 30px rgba(15,23,42,.08);
+:root{
+  /* Palette */
+  --navy:#0A1B33;           /* deep navy */
+  --navy-600:#102743;
+  --crimson:#B22234;        /* muted crimson per directive */
+  --crimson-700:#8F1436;
+  --white:#FFFFFF;
+  --silver:#C0C0C0;         /* metallic accent */
+  --ink:#0f172a;            /* text */
+  --muted:#334155;          /* slate-700-ish */
+  --muted-2:#64748b;        /* slate-500-ish */
+  --gold:#F5C542;           /* badge accent */
+
+  /* Surfaces */
+  --background:#F8F9FA;     /* off-white */
+  --card:#FFFFFF;
+  --card-2:#F1F5F9;
+  --border:#E2E8F0;
+
+  /* Aliases for legacy uses */
+  --foreground: var(--ink);
+  --muted-foreground: var(--muted);
+
+  /* Brand */
+  --brand:#0A2342;          /* navy variant for CTAs */
+  --brand-600:#081B32;
+  --accent:var(--crimson);
+  --warn:#D97706;
+
+  /* Effects */
+  --radius: 12px;
+  --shadow:0 12px 30px rgba(10,27,51,.12);
 }
 
-html, body { height: 100% }
-body {
-  background: var(--background);
-  color: var(--foreground);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+html,body{height:100%}
+body{
+  background:var(--background);
+  color:var(--foreground);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
-/* =========================
-   Core UI
-   ========================= */
-.container { @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
-
-.btn { @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition; }
-.btn-primary {
-  color: white;
-  background: linear-gradient(180deg, var(--brand), var(--brand-600)) !important;
-  box-shadow: var(--shadow);
+/* Typography scale (pairs well with Inter / Oswald) */
+.h1{
+  @apply text-4xl md:text-6xl font-extrabold leading-tight;
+  letter-spacing:-.02em;
 }
-.btn-ghost { @apply border; background: var(--card) !important; border-color: var(--border) !important; }
-.btn:disabled { @apply opacity-50 cursor-not-allowed; }
-.btn:focus-visible { @apply outline-none ring-2 ring-[var(--brand)] ring-offset-2; }
+.h2{
+  @apply text-2xl md:text-3xl font-bold;
+  letter-spacing:-.01em;
+}
+.muted{ color:var(--muted)!important; }
+.small{ @apply text-xs; color:var(--muted-2)!important; }
+
+/* Layout container */
+.container{ @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8; }
+
+/* Buttons */
+.btn{ @apply inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition; }
+.btn-primary{
+  color:var(--white);
+  background:linear-gradient(90deg,var(--crimson),var(--navy));
+  box-shadow:var(--shadow);
+}
+.btn-secondary{
+  color:var(--white);
+  background:linear-gradient(90deg,var(--brand),var(--brand-600));
+  box-shadow:var(--shadow);
+}
+.btn-ghost{ @apply border; background:var(--card)!important; }
+.btn:disabled{ @apply opacity-50 cursor-not-allowed; }
+.btn:focus-visible{ @apply outline-none ring-2 ring-offset-2; box-shadow:none; }
 
 /* Inputs */
-.label { @apply block mb-1 text-xs uppercase tracking-wide text-[var(--muted-foreground)]; }
-.input, .textarea {
+.label{ @apply block mb-1 text-xs uppercase tracking-wide; color: var(--muted); }
+.input,.textarea{
   @apply w-full rounded-xl border px-3 py-2 text-sm;
-  background: var(--card); border-color: var(--border); color: var(--foreground);
+  background:var(--card); color:var(--ink);
+  /* border color via inline style or default tailwind border */
 }
-.input:focus, .textarea:focus { @apply outline-none ring-2 ring-[var(--brand)] border-transparent; }
+.input:focus,.textarea:focus{ @apply outline-none ring-2 border-transparent; }
 
 /* Cards */
-.card {
-  @apply rounded-2xl p-5;
-  background-color: var(--card) !important;
-  color: var(--foreground) !important;
-  border: 1px solid var(--border) !important;
+.card{
+  border:1px solid var(--border);
+  background-color:var(--card);
+  color:var(--ink);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
+  padding: 1.25rem; /* 20px */
 }
-.card a { text-decoration: underline; text-decoration-color: var(--brand); }
-
-/* Typography */
-.h1 { @apply text-4xl md:text-6xl font-extrabold leading-tight; letter-spacing: -0.02em; }
-.h2 { @apply text-2xl md:text-3xl font-bold; letter-spacing: -0.01em; }
-.muted { color: var(--muted-foreground) !important; }
-.small { @apply text-xs; color: var(--muted-2) !important; }
+.card a{ text-decoration: underline; text-decoration-color: var(--brand); }
 
 /* Links */
-.link-underline { @apply underline underline-offset-4 hover:opacity-90; text-decoration-color: var(--brand); }
+.link-underline{ @apply underline underline-offset-4 hover:opacity-90; }
 
-/* Elevation */
-.elevate { box-shadow: var(--shadow); }
-
-/* Animations */
-@keyframes floatUp { from { transform: translateY(8px); opacity: .0 } to { transform: translateY(0); opacity: 1 } }
-.fade-in { animation: floatUp .5s ease-out both; }
-
-/* A11y & helpers */
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0;
+/* A11y helpers */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border-width:0;
 }
-.focus-ring { @apply outline-none ring-2 ring-[var(--brand)] ring-offset-2; }
 
-/* =========================
-   Google Maps theming (light)
-   ========================= */
-.gm-style .gm-style-iw-c {
-  background: var(--card) !important; color: var(--foreground) !important;
-  border-radius: 12px !important; border: 1px solid var(--border) !important; box-shadow: var(--shadow) !important;
+/* Optional, static hero backdrop (remove class in markup if not desired) */
+.hero-bg{
+  position:absolute; inset:0;
+  background:
+    radial-gradient(1200px 600px at -10% -20%, rgba(178,34,52,0.06), transparent 60%),
+    radial-gradient(1000px 480px at 110% -10%, rgba(10,35,66,0.08), transparent 55%),
+    linear-gradient(180deg, rgba(10,27,51,0.06), rgba(10,27,51,0));
+  pointer-events:none;
 }
-.gm-style .gm-style-iw-d { color: var(--foreground) !important; scrollbar-color: var(--border) transparent; }
-.gm-ui-hover-effect { filter: none; }
-.gm-control-active, .gm-fullscreen-control, .gm-bundled-control, .gmnoprint {
-  background: var(--card) !important; color: var(--foreground) !important;
-  border: 1px solid var(--border) !important; border-radius: 10px !important; box-shadow: var(--shadow) !important;
+
+/* Google Maps (light) */
+.gm-style .gm-style-iw-c{
+  background:var(--card)!important; color:var(--ink)!important;
+  border-radius:12px!important; border:1px solid var(--border)!important; box-shadow:var(--shadow)!important;
 }
-.gm-style-cc, .gm-style-cc div, .gm-style-cc span { background: transparent !important; color: var(--muted-2) !important; }
+.gm-style .gm-style-iw-d{ color:var(--ink)!important; scrollbar-color:var(--border) transparent; }
+.gm-ui-hover-effect{ filter:none; }
+.gm-control-active,.gm-fullscreen-control,.gm-bundled-control,.gmnoprint{
+  background:var(--card)!important; color:var(--ink)!important;
+  border:1px solid var(--border)!important; border-radius:10px!important; box-shadow:var(--shadow)!important;
+}
+.gm-style-cc,.gm-style-cc div,.gm-style-cc span{ background:transparent!important; color:var(--muted-2)!important; }

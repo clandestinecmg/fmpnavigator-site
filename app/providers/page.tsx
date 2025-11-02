@@ -19,7 +19,7 @@ export default function ProvidersPage() {
 
   return (
     <section className="container py-8 space-y-6">
-      <header className="fade-in">
+      <header>
         <h1 className="h1">Direct-Billing Providers</h1>
         <p className="muted mt-2">
           Locations reported as direct-billing. Please verify with each hospital’s HMO/insurance desk prior to visits; participation can change.

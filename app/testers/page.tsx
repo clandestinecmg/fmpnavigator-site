@@ -22,7 +22,8 @@ export default function TestersPage() {
         <div className="card space-y-2">
           <h1 className="h2">Testers</h1>
           <p className="muted">Please sign in to access the testers’ area.</p>
-          <Link href="/(auth)/signin" className="btn btn-primary w-fit">Sign in</Link>
+          {/* ✅ Route groups are ignored in URLs — use /signin */}
+          <Link href="/signin" className="btn btn-primary w-fit">Sign in</Link>
         </div>
       </section>
     );

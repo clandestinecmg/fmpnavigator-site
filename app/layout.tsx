@@ -1,67 +1,83 @@
 // app/layout.tsx
+import Providers from '@/components/Providers'
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ClientRoot from '@/components/ClientRoot';
+import UnderConstructionBanner from '@/components/UnderConstructionBanner';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://fmpnavigator.org';
+
+// Fixed banner height (keep header = 4rem). Tweak here if you adjust banner padding.
+const BANNER_REM = 3; // ~48px
 
 export const metadata: Metadata = {
-  title: 'FMP Navigator',
-  description:
-    'Helping U.S. Veterans overseas navigate the VA Foreign Medical Program.',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'FMP Navigator',
+    template: '%s • FMP Navigator',
+  },
+  description: 'Helping U.S. Veterans overseas navigate the VA Foreign Medical Program.',
   applicationName: 'FMP Navigator',
   authors: [{ name: 'FMP Navigator Project' }],
   robots: { index: true, follow: true },
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    url: SITE_URL,
+    siteName: 'FMP Navigator',
+    title: 'FMP Navigator — VA Foreign Medical Program support for vets overseas',
+    description:
+      'Find FMP-aware providers, direct-billing hospitals, crisis resources, and practical checklists.',
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'FMP Navigator' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FMP Navigator',
+    description: 'Helping U.S. Veterans overseas navigate the VA Foreign Medical Program.',
+    images: ['/og-image.png'],
+  },
+  category: 'nonprofit',
+  keywords: ['VA FMP', 'Foreign Medical Program', 'veterans overseas', 'direct billing', 'Thailand', 'SEA'],
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#14213a',
+  themeColor: '#0A1B33', // --navy from globals.css
 };
 
-// Always-visible Under Construction banner (no client-only APIs used)
-function UnderConstructionBanner() {
-  return (
-    <div className="fixed top-0 left-0 right-0 z-[100] bg-yellow-400 text-black text-center py-3 px-4 shadow-md border-b border-yellow-600">
-      🚧 <span className="font-semibold">FMP Navigator Website Under Construction</span> — some pages and forms may be temporarily unavailable while we finalize the build.
-    </div>
-  );
-}
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const year = new Date().getFullYear();
-
+  // Keep this as a normal React component (Server Component) that returns <html><body>…
+  // No client-only code here.
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-dvh bg-[var(--background)] text-[var(--foreground)] antialiased">
-        {/* Accessibility: skip to content */}
+        {/* A11y: skip link */}
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus-ring absolute left-2 top-2 z-[101] rounded bg-[var(--card)] px-3 py-2"
+          className="sr-only focus:not-sr-only rounded bg-[var(--card)] px-3 py-2"
+          style={{ position: 'absolute', left: '0.5rem', top: '0.5rem', zIndex: 101 }}
         >
           Skip to content
         </a>
 
-        {/* Always-visible site-wide notice */}
+        {/* Site-wide banner (fixed) */}
         <UnderConstructionBanner />
 
-        {/* Add top padding so the fixed banner doesn't overlap header/content */}
-        <div className="pt-16">
-          {/* Global client-side context/providers (Auth, etc.) */}
-          <ClientRoot>
-            <Header />
-
-            <main
-              id="main"
-              role="main"
-              className="container mx-auto px-4 py-6"
-            >
-              {children}
-            </main>
-
-            <Footer year={year} />
-          </ClientRoot>
+        {/* Offset: header (4rem) + banner + safe-area */}
+        <div
+          style={{
+            paddingTop: `calc(4rem + ${BANNER_REM}rem + env(safe-area-inset-top))`,
+          }}
+        >
+          <Header />
+          <main id="main" role="main" className="container mx-auto px-4 py-6">
+            <Providers>
+        {children}
+      </Providers>
+          </main>
+          <Footer />
         </div>
       </body>
     </html>

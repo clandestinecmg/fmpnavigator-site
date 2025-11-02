@@ -44,50 +44,92 @@ type GMapScriptOptions = {
   v?: string;
 };
 
-/** Load the Google Maps script once (no @googlemaps/js-api-loader needed). */
+let googleMapsLoadPromise: Promise<typeof google.maps> | null = null;
+
+/** Load the Google Maps script once using the official async loader pattern. */
 function loadGoogleMapsScript({
   apiKey,
   libraries = [],
   v = 'weekly',
-}: GMapScriptOptions): Promise<void> {
+}: GMapScriptOptions): Promise<typeof google.maps> {
   const WIN = typeof window !== 'undefined' ? (window as any) : undefined;
   if (!WIN) return Promise.reject(new Error('window not available'));
-  if (WIN.__gmapsLoaded) return WIN.__gmapsLoaded as Promise<void>;
+  if (!apiKey) return Promise.reject(new Error('Missing Google Maps API key'));
 
-  const existing = document.querySelector<HTMLScriptElement>('script[data-gmaps="1"]');
-  if (existing) {
-    WIN.__gmapsLoaded =
-      existing.dataset.loaded === '1'
-        ? Promise.resolve()
-        : new Promise<void>((resolve, reject) => {
-            existing.addEventListener('load', () => resolve());
-            existing.addEventListener('error', (e) => reject(e));
-          });
-    return WIN.__gmapsLoaded;
+  if (WIN.google?.maps?.importLibrary) {
+    return Promise.resolve(WIN.google.maps);
   }
+  if (googleMapsLoadPromise) return googleMapsLoadPromise;
 
-  const params = new URLSearchParams({
-  key: apiKey,
-  v,
-  libraries: libraries.join(','),
-  loading: 'async',          
-});
-  const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
-  script.async = true;
-  script.defer = true;
-  script.dataset.gmaps = '1';
+  googleMapsLoadPromise = new Promise<typeof google.maps>((resolve, reject) => {
+    let settled = false;
 
-  WIN.__gmapsLoaded = new Promise<void>((resolve, reject) => {
+    const finish = () => {
+      try {
+        delete WIN.initMap;
+      } catch {
+        WIN.initMap = undefined;
+      }
+    };
+
+    const handleReady = () => {
+      if (settled) return;
+      settled = true;
+      finish();
+      const maps = WIN.google?.maps;
+      if (maps?.importLibrary) {
+        resolve(maps);
+      } else {
+        googleMapsLoadPromise = null;
+        reject(new Error('google.maps.importLibrary unavailable after loading Maps script'));
+      }
+    };
+
+    const handleError = (event?: Event | string | null) => {
+      if (settled) return;
+      settled = true;
+      finish();
+      googleMapsLoadPromise = null;
+      const message =
+        event instanceof ErrorEvent && event.message
+          ? event.message
+          : typeof event === 'string' && event.length > 0
+          ? event
+          : 'Failed to load Google Maps script';
+      reject(new Error(message));
+    };
+
+    const params = new URLSearchParams({
+      key: apiKey,
+      v,
+      loading: 'async',
+      callback: 'initMap',
+    });
+    if (libraries.length > 0) {
+      params.set('libraries', libraries.join(','));
+    }
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
+    script.async = true;
+    script.defer = true;
+    script.dataset.gmapsLoader = '1';
+    script.onerror = (ev) => handleError(ev);
     script.addEventListener('load', () => {
       script.dataset.loaded = '1';
-      resolve();
+      if (WIN.google?.maps?.importLibrary) {
+        handleReady();
+      }
     });
-    script.addEventListener('error', (e) => reject(e));
+
+    WIN.initMap = () => {
+      handleReady();
+    };
+
+    document.head.appendChild(script);
   });
 
-  document.head.appendChild(script);
-  return WIN.__gmapsLoaded;
+  return googleMapsLoadPromise;
 }
 
 /** Helper to fetch a place’s LatLng (and canonical URI) using the new Places JS API */
@@ -140,16 +182,22 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
 
       try {
         // 1) Load the script once
-        await loadGoogleMapsScript({
+        const maps = await loadGoogleMapsScript({
           apiKey: MAPS_API_KEY,
           libraries: ['places'], // we use new Places JS API client side for placeId -> LatLng
           v: 'weekly',
         });
         if (cancelled) return;
 
+        const importLibrary = maps.importLibrary;
+        if (typeof importLibrary !== 'function') {
+          throw new Error('google.maps.importLibrary is not available after loading the Maps script.');
+        }
+
         // 2) Import libraries (modern API)
-        const { Map } = (await (google.maps as any).importLibrary('maps')) as google.maps.MapsLibrary;
-        const { AdvancedMarkerElement } = (await (google.maps as any).importLibrary(
+        const { Map } = (await importLibrary.call(maps, 'maps')) as google.maps.MapsLibrary;
+        const { AdvancedMarkerElement } = (await importLibrary.call(
+          maps,
           'marker'
         )) as google.maps.MarkerLibrary;
 
@@ -301,52 +349,46 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
   }, [providers]);
 
   // Respond to selection: pan/zoom and open info
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-    if (!selectedId) return;
+useEffect(() => {
+  const map = mapRef.current;
+  const info = infoRef.current;
+  if (!map || !selectedId) return;
 
-    const marker = markersRef.current.get(selectedId);
-    const info = infoRef.current;
-    if (!marker) return;
+  const marker = markersRef.current.get(selectedId);
+  if (!marker) return;
 
-    const pos = marker.position as google.maps.LatLngLiteral | null;
-    if (!pos) return;
+  const pos = marker.position as google.maps.LatLngLiteral | null;
+  if (!pos) return;
 
-    // Smooth zoom/pan
-    map.panTo(pos);
-    if ((map.getZoom() ?? 0) < 14) map.setZoom(14);
+  // Smooth zoom/pan
+  map.panTo(pos);
+  if ((map.getZoom() ?? 0) < 14) map.setZoom(14);
 
-    // Rebuild a small info content if needed (markers already wired, but we want to ensure open)
-    // We simply trigger the same click handler effect by opening with anchor.
-    if (info) {
-      // If no content yet (first open via selection), set a minimal one
-      if (!info.getContent()) {
-        const p = providers.find((x) => x.id === selectedId);
-        if (p) {
-          const displayName = p.gmaps?.formattedName ?? p.name;
-          const address = p.gmaps?.formattedAddress ?? p.city ?? '';
-          const phone = p.gmaps?.internationalPhone ?? p.phone ?? '';
-          const url = p.gmaps?.url;
-          const fallback = `https://www.google.com/maps/dir/?api=1&destination=${pos.lat},${pos.lng}`;
-          info.setContent(
-            `
-            <div style="min-width:240px">
-              <strong>${displayName}</strong><br/>
-              <div>${address}</div>
-              ${phone ? `<div>${phone}</div>` : ''}
-              <div style="margin-top:8px">
-                <a target="_blank" rel="noopener" href="${url ?? fallback}">${url ? 'Open in Google&nbsp;Maps' : 'Directions'}</a>
-              </div>
-            </div>
-          `
-          );
-        }
-      }
-      // IMPORTANT: do not pass "position" in options; only { map, anchor } is valid
-      info.open({ anchor: marker, map });
-    }
-  }, [selectedId, providers]);
+  // Always rebuild the content for the selected provider
+  const p = providers.find((x) => x.id === selectedId);
+  if (!p || !info) return;
+
+  const displayName = p.gmaps?.formattedName ?? p.name;
+  const address = p.gmaps?.formattedAddress ?? p.city ?? '';
+  const phone = p.gmaps?.internationalPhone ?? p.phone ?? '';
+  const url = p.gmaps?.url;
+  const fallback = `https://www.google.com/maps/dir/?api=1&destination=${pos.lat},${pos.lng}`;
+
+  const contentHTML = `
+    <div style="min-width:240px">
+      <strong>${displayName}</strong><br/>
+      <div>${address}</div>
+      ${phone ? `<div>${phone}</div>` : ''}
+      <div style="margin-top:8px">
+        <a target="_blank" rel="noopener" href="${url ?? fallback}">${url ? 'Open in Google&nbsp;Maps' : 'Directions'}</a>
+      </div>
+    </div>
+  `;
+
+  // Ensure we update content every time selection changes
+  info.setContent(contentHTML);
+  info.open({ anchor: marker, map });
+}, [selectedId, providers]);
 
   return (
     <div className="card bg-[var(--card)] text-[var(--text)]">
