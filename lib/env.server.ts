@@ -1,4 +1,4 @@
-import 'server-only';
+import "server-only";
 
 function req(name: string) {
   const v = process.env[name];
@@ -6,5 +6,5 @@ function req(name: string) {
   return v;
 }
 
-export const RECAPTCHA_SECRET_KEY = req('RECAPTCHA_SECRET_KEY');
+export const RECAPTCHA_SECRET_KEY = req("RECAPTCHA_SECRET_KEY");
 // Add other server-only secrets here (e.g., FIREBASE_PRIVATE_KEY, etc.)

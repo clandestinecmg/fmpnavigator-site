@@ -35,7 +35,6 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
-
 # FMP Navigator — Data Enrichment & Maps Identity
 
 This doc explains how we enrich `data/providers.json` with **Google Places** identity (place IDs, canonical names/addresses, official website/phone, and authoritative coordinates), and then merge the results into a final file used by the website.
@@ -46,10 +45,10 @@ This doc explains how we enrich `data/providers.json` with **Google Places** ide
 
 We maintain providers in three layers:
 
-1) **Base** — `data/providers.json`  
+1. **Base** — `data/providers.json`  
    Curated records (name, city, phone, flags). Lat/lng may be rough.
 
-2) **Enriched (generated)** — `data/providers.enriched.json`  
+2. **Enriched (generated)** — `data/providers.enriched.json`  
    Produced by `scripts/enrich-places.ts` (server-side Places API). Adds:
    ```ts
    gmaps?: {
@@ -60,3 +59,4 @@ We maintain providers in three layers:
      internationalPhone?: string
      location?: { lat: number, lng: number } // authoritative coordinates
    }
+   ```

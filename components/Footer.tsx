@@ -8,14 +8,16 @@
  */
 type FooterProps = { year?: number };
 
-export default function Footer({ year = new Date().getFullYear() }: FooterProps) {
+export default function Footer({
+  year = new Date().getFullYear(),
+}: FooterProps) {
   return (
     <footer
       role="contentinfo"
       className="mt-16 text-white"
       style={{
-        background: 'var(--navy)',
-        borderTop: '1px solid var(--navy-600)',
+        background: "var(--navy)",
+        borderTop: "1px solid var(--navy-600)",
       }}
     >
       <div className="container flex flex-col md:flex-row items-center justify-between gap-4 py-8">
@@ -30,7 +32,15 @@ export default function Footer({ year = new Date().getFullYear() }: FooterProps)
             fill="none"
             className="shrink-0"
           >
-            <rect x="0.75" y="0.75" width="22.5" height="14.5" rx="2" stroke="currentColor" strokeWidth="1.5" />
+            <rect
+              x="0.75"
+              y="0.75"
+              width="22.5"
+              height="14.5"
+              rx="2"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
             <path d="M1.5 4.5h21" stroke="currentColor" strokeWidth="1" />
             <path d="M1.5 8h21" stroke="currentColor" strokeWidth="1" />
             <path d="M1.5 11.5h21" stroke="currentColor" strokeWidth="1" />

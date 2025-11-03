@@ -1,18 +1,20 @@
 // app/providers/page.tsx
-'use client';
+"use client";
 
-import React, { useMemo, useState } from 'react';
-import ProvidersMap, { type Provider as ProviderType } from '@/components/ProvidersMap';
-import ProvidersList from '@/components/ProvidersList';
+import React, { useMemo, useState } from "react";
+import ProvidersMap, {
+  type Provider as ProviderType,
+} from "@/components/ProvidersMap";
+import ProvidersList from "@/components/ProvidersList";
 
 // Use the merged & applied dataset (includes gmaps.placeId/url/phone/address/coords)
-import providersData from '@/data/providers.json';
+import providersData from "@/data/providers.json";
 
 export default function ProvidersPage() {
   // Keep the providers array STABLE across renders to avoid re-initting the map
   const providers = useMemo<ProviderType[]>(
     () => providersData as ProviderType[],
-    []
+    [],
   );
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -22,7 +24,9 @@ export default function ProvidersPage() {
       <header>
         <h1 className="h1">Direct-Billing Providers</h1>
         <p className="muted mt-2">
-          Locations reported as direct-billing. Please verify with each hospital’s HMO/insurance desk prior to visits; participation can change.
+          Locations reported as direct-billing. Please verify with each
+          hospital’s HMO/insurance desk prior to visits; participation can
+          change.
         </p>
       </header>
 
@@ -41,12 +45,14 @@ export default function ProvidersPage() {
 
       <aside className="card">
         <h2 className="h2 mb-2">Notes</h2>
-        <ul className="list-disc ml-6 space-y-1 text-[var(--muted-foreground)]">
+        <ul className="list-disc ml-6 space-y-1 etxt-[var(--muted-foreground)]">
           <li>
-            We now rely on <code>data/providers.json</code> (server-enriched with Google Maps) for name, address, phone, and exact geometry.
+            We now rely on <code>data/providers.json</code> (server-enriched
+            with Google Maps) for name, address, phone, and exact geometry.
           </li>
           <li>
-            Each item includes <code>gmaps.placeId</code> and canonical <code>gmaps.url</code> where available.
+            Each item includes <code>gmaps.placeId</code> and canonical{" "}
+            <code>gmaps.url</code> where available.
           </li>
         </ul>
       </aside>

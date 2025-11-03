@@ -1,24 +1,24 @@
 // app/(auth)/signin/page.tsx
-'use client';
+"use client";
 
-import React, { useState, type FormEvent } from 'react';
-import { useAuth } from '@/components/AuthProvider';
+import React, { useState, type FormEvent } from "react";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function SignInPage() {
   const { user, loading, signInEmail, signUpEmail, signOutUser } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [error, setError] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     try {
-      if (mode === 'signin') await signInEmail(email, password);
+      if (mode === "signin") await signInEmail(email, password);
       else await signUpEmail(email, password);
     } catch (err: any) {
-      setError(err?.message ?? 'Authentication failed');
+      setError(err?.message ?? "Authentication failed");
     }
   }
 
@@ -34,8 +34,12 @@ export default function SignInPage() {
     return (
       <section className="container py-8 space-y-4">
         <div className="card">
-          <p className="mb-3">Signed in as <strong>{user.email}</strong></p>
-          <button className="btn btn-ghost" onClick={signOutUser}>Sign out</button>
+          <p className="mb-3">
+            Signed in as <strong>{user.email}</strong>
+          </p>
+          <button className="btn btn-ghost" onClick={signOutUser}>
+            Sign out
+          </button>
         </div>
       </section>
     );
@@ -44,7 +48,9 @@ export default function SignInPage() {
   return (
     <section className="container py-8 max-w-md">
       <div className="card space-y-4">
-        <h1 className="h2">{mode === 'signin' ? 'Sign in' : 'Create account'}</h1>
+        <h1 className="h2">
+          {mode === "signin" ? "Sign in" : "Create account"}
+        </h1>
         {error && <p className="small text-red-400">{error}</p>}
 
         <form onSubmit={onSubmit} className="space-y-3">
@@ -64,18 +70,22 @@ export default function SignInPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+            autoComplete={
+              mode === "signin" ? "current-password" : "new-password"
+            }
           />
           <button className="btn btn-primary w-full" type="submit">
-            {mode === 'signin' ? 'Sign in' : 'Create account'}
+            {mode === "signin" ? "Sign in" : "Create account"}
           </button>
         </form>
 
         <button
           className="btn btn-ghost w-full"
-          onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         >
-          {mode === 'signin' ? 'Need an account? Sign up' : 'Already have an account? Sign in'}
+          {mode === "signin"
+            ? "Need an account? Sign up"
+            : "Already have an account? Sign in"}
         </button>
       </div>
     </section>

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import type { ReactNode } from 'react';
-import AuthProvider from '@/components/AuthProvider';
+import type { ReactNode } from "react";
+import AuthProvider from "@/components/AuthProvider";
 
 /**
  * ClientRoot

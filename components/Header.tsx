@@ -1,9 +1,9 @@
 // components/Header.tsx
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type NavItem = {
   label: string;
@@ -13,75 +13,84 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { label: 'Home', href: '/', exact: true },
-  { label: 'About', href: '/about' },
-  { label: 'App', href: '/app' },
-  { label: 'Providers', href: '/providers' },
-  { label: 'Resources', href: '/resources' },
-  { label: 'Advocacy', href: '/advocacy' },
-  { label: 'Updates', href: '/updates' },
-  { label: 'Contact', href: '/contact' },
-  { label: 'Testers', href: '/testers' }, // ✅ restored
-  { label: 'Sign in', href: '/signin' },
-  // { label: 'Debug Env', href: '/_debug-env', devOnly: true },
+  { label: "Home", href: "/", exact: true },
+  { label: "About", href: "/about" },
+  { label: "App", href: "/app" },
+  { label: "Providers", href: "/providers" },
+  { label: "Resources", href: "/resources" },
+  { label: "Advocacy", href: "/advocacy" },
+  { label: "Updates", href: "/updates" },
+  { label: "Contact", href: "/contact" },
+  { label: "Testers", href: "/testers" },
+  { label: "Sign in", href: "/signin" },
 ];
 
 function isItemActive(pathname: string, item: NavItem) {
   if (item.exact) return pathname === item.href;
-  if (item.href === '/updates') {
-    return pathname === '/updates' || pathname.startsWith('/updates/');
+  if (item.href === "/updates") {
+    return pathname === "/updates" || pathname.startsWith("/updates/");
   }
-  return pathname === item.href || pathname.startsWith(item.href + '/');
+  return pathname === item.href || pathname.startsWith(item.href + "/");
 }
 
 export default function Header() {
-  const pathname = usePathname() || '/';
+  const pathname = usePathname() || "/";
   const [open, setOpen] = useState(false);
 
   const isDev =
-    process.env.NODE_ENV !== 'production' ||
-    (typeof window !== 'undefined' && window.location.hostname === 'localhost');
+    process.env.NODE_ENV !== "production" ||
+    (typeof window !== "undefined" && window.location.hostname === "localhost");
 
-  useEffect(() => setOpen(false), [pathname]);
+  // Defer close on route change to avoid synchronous setState inside effect
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setOpen(false));
+    return () => cancelAnimationFrame(id);
+  }, [pathname]);
 
+  // Close on Escape when menu is open
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
   const items = NAV_ITEMS.filter((i) => (i.devOnly ? isDev : true));
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-[var(--border)] bg-[var(--background)]/90 backdrop-blur supports-[backdrop-filter]:backdrop-blur">
+    <header className="sticky top-0 z-50 w-full border-b border-(--border) bg-(--background)/90 backdrop-blur supports-backdrop-filter:backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
-        {/* Brand (logo removed; no custom focus ring) */}
         <Link
           href="/"
           aria-label="FMP Navigator home"
           className="flex items-center gap-2.5"
         >
-          <span className="font-extrabold tracking-tight text-2xl md:text-3xl text-[var(--ink)]">
-            FMP <span className="text-[var(--crimson)]">Navigator</span>
+          <span className="font-extrabold tracking-tight text-2xl md:text-3xl text-(--ink)">
+            FMP <span className="text-(--crimson)">Navigator</span>
           </span>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-4" role="navigation" aria-label="Primary">
+        <nav
+          className="hidden md:flex items-center gap-4"
+          role="navigation"
+          aria-label="Primary"
+        >
           {items.map((item) => {
             const active = isItemActive(pathname, item);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                aria-current={active ? 'page' : undefined}
+                aria-current={active ? "page" : undefined}
                 className={[
-                  'rounded px-2 py-1 text-sm transition-colors',
+                  "rounded px-2 py-1 text-sm transition-colors",
                   active
-                    ? 'font-semibold text-[var(--ink)] underline underline-offset-4'
-                    : 'text-[var(--muted)] hover:text-[var(--ink)]',
-                ].join(' ')}
+                    ? "font-semibold text-(--ink) underline underline-offset-4"
+                    : "text-(--muted) hover:text-(--ink)",
+                ].join(" ")}
               >
                 {item.label}
               </Link>
@@ -89,17 +98,28 @@ export default function Header() {
           })}
         </nav>
 
-        {/* Mobile menu (three-line hamburger) */}
+        {/* Mobile menu button */}
         <button
           type="button"
-          className="md:hidden inline-flex h-11 w-11 items-center justify-center rounded border border-[var(--border)]"
+          className="md:hidden inline-flex h-11 w-11 items-center justify-center rounded border border-(--border)"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="mobile-nav"
           aria-label="Toggle navigation"
         >
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
-            <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <svg
+            viewBox="0 0 24 24"
+            width="28"
+            height="28"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 7h16M4 12h16M4 17h16"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
         </button>
       </div>
@@ -108,7 +128,7 @@ export default function Header() {
       {open && (
         <nav
           id="mobile-nav"
-          className="md:hidden border-t border-[var(--border)] bg-[var(--background)]"
+          className="md:hidden border-t border-(--border) bg-(--background)"
           role="navigation"
           aria-label="Primary mobile"
         >
@@ -120,13 +140,13 @@ export default function Header() {
                   <Link
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    aria-current={active ? 'page' : undefined}
+                    aria-current={active ? "page" : undefined}
                     className={[
-                      'block rounded px-2 py-2 text-base',
+                      "block rounded px-2 py-2 text-base",
                       active
-                        ? 'font-semibold text-[var(--ink)] underline underline-offset-4'
-                        : 'text-[var(--muted)] hover:text-[var(--ink)]',
-                    ].join(' ')}
+                        ? "font-semibold text-(--ink) underline underline-offset-4"
+                        : "text-(--muted) hover:text-(--ink)",
+                    ].join(" ")}
                   >
                     {item.label}
                   </Link>

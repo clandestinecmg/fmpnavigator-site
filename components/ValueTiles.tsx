@@ -1,26 +1,26 @@
 // components/ValueTiles.tsx
-import Link from 'next/link';
+import Link from "next/link";
 
 const items = [
   {
-    title: 'Providers',
-    desc: 'Direct-billing hospitals and clinics vetted by veterans.',
-    href: '/providers',
+    title: "Providers",
+    desc: "Direct-billing hospitals and clinics vetted by veterans.",
+    href: "/providers",
   },
   {
-    title: 'Resources',
-    desc: 'Claim how-tos, FMP forms, contact info, crisis support.',
-    href: '/resources',
+    title: "Resources",
+    desc: "Claim how-tos, FMP forms, contact info, crisis support.",
+    href: "/resources",
   },
   {
-    title: 'Updates',
-    desc: 'Roadmap notes and transparency reports.',
-    href: '/updates',
+    title: "Updates",
+    desc: "Roadmap notes and transparency reports.",
+    href: "/updates",
   },
   {
-    title: 'Contact',
-    desc: 'Questions? We reply quickly.',
-    href: '/contact',
+    title: "Contact",
+    desc: "Questions? We reply quickly.",
+    href: "/contact",
   },
 ];
 

@@ -44,10 +44,10 @@ type CliFlags = {
   inPath: string;
   outPath: string;
   countryBias?: string | undefined; // e.g., "PH,TH"
-  only?: string | undefined;        // CSV of ids to process
+  only?: string | undefined; // CSV of ids to process
   dryRun?: boolean | undefined;
   overwriteGeo?: boolean | undefined; // (merge handles actual geo overwrite)
-  force?: boolean | undefined;      // re-enrich even if placeId already exists
+  force?: boolean | undefined; // re-enrich even if placeId already exists
 };
 
 function parseFlags(argv: string[]): CliFlags {
@@ -79,7 +79,9 @@ function parseFlags(argv: string[]): CliFlags {
     } else if (a === "--out") {
       outPath = takeNext("--out");
     } else if (a.startsWith("--country-bias")) {
-      const v = a.includes("=") ? a.split("=", 2)[1] : takeNext("--country-bias");
+      const v = a.includes("=")
+        ? a.split("=", 2)[1]
+        : takeNext("--country-bias");
       countryBias = v || undefined;
     } else if (a === "--only") {
       only = takeNext("--only");
@@ -98,7 +100,9 @@ function parseFlags(argv: string[]): CliFlags {
 
   const resolved: CliFlags = {
     inPath: path.isAbsolute(inPath) ? inPath : path.join(process.cwd(), inPath),
-    outPath: path.isAbsolute(outPath) ? outPath : path.join(process.cwd(), outPath),
+    outPath: path.isAbsolute(outPath)
+      ? outPath
+      : path.join(process.cwd(), outPath),
     countryBias,
     only,
     dryRun,
@@ -118,25 +122,31 @@ async function searchText(query: string, countryBias?: string) {
   // Places API (New): POST https://places.googleapis.com/v1/places:searchText
   const body: any = {
     textQuery: query,
-    maxResultCount: 5
+    maxResultCount: 5,
   };
 
   // Optionally bias to a single regionCode (Google supports one here)
   if (countryBias) {
-    const first = countryBias.split(",").map(s => s.trim()).filter(Boolean)[0];
+    const first = countryBias
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)[0];
     if (first) body.regionCode = first;
   }
 
-  const resp = await fetch("https://places.googleapis.com/v1/places:searchText", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": API_KEY,
-      "X-Goog-FieldMask":
-        "places.id,places.displayName,places.formattedAddress,places.location,places.googleMapsUri,places.internationalPhoneNumber"
+  const resp = await fetch(
+    "https://places.googleapis.com/v1/places:searchText",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": API_KEY,
+        "X-Goog-FieldMask":
+          "places.id,places.displayName,places.formattedAddress,places.location,places.googleMapsUri,places.internationalPhoneNumber",
+      },
+      body: JSON.stringify(body),
     },
-    body: JSON.stringify(body)
-  });
+  );
 
   if (!resp.ok) {
     const t = await resp.text();
@@ -159,11 +169,11 @@ async function getDetails(placeId: string) {
   const fields =
     "id,displayName,formattedAddress,location,googleMapsUri,internationalPhoneNumber";
   const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(
-    placeId
+    placeId,
   )}?fields=${encodeURIComponent(fields)}`;
 
   const resp = await fetch(url, {
-    headers: { "X-Goog-Api-Key": API_KEY }
+    headers: { "X-Goog-Api-Key": API_KEY },
   });
 
   if (!resp.ok) {
@@ -196,11 +206,12 @@ function toGmapsMeta(
         googleMapsUri?: string;
         internationalPhoneNumber?: string;
       }
-    | undefined
+    | undefined,
 ): GmapsMeta | undefined {
   if (!d?.id) return undefined;
   const location =
-    typeof d.location?.latitude === "number" && typeof d.location?.longitude === "number"
+    typeof d.location?.latitude === "number" &&
+    typeof d.location?.longitude === "number"
       ? { lat: d.location.latitude, lng: d.location.longitude }
       : undefined;
 
@@ -209,7 +220,8 @@ function toGmapsMeta(
   if (d.googleMapsUri) g.url = d.googleMapsUri;
   if (d.displayName?.text) g.formattedName = d.displayName.text;
   if (d.formattedAddress) g.formattedAddress = d.formattedAddress;
-  if (d.internationalPhoneNumber) g.internationalPhone = d.internationalPhoneNumber;
+  if (d.internationalPhoneNumber)
+    g.internationalPhone = d.internationalPhoneNumber;
   if (location) g.location = location;
   return g;
 }
@@ -217,7 +229,7 @@ function toGmapsMeta(
 async function enrichOne(
   p: Provider,
   countryBias?: string,
-  force?: boolean
+  force?: boolean,
 ): Promise<Provider> {
   if (p.gmaps?.placeId && !force) return p;
 
@@ -254,7 +266,7 @@ async function enrichOne(
     ...(p.caution !== undefined ? { caution: p.caution } : {}),
     ...(p.lat !== undefined ? { lat: p.lat } : {}),
     ...(p.lng !== undefined ? { lng: p.lng } : {}),
-    gmaps: { ...(p.gmaps ?? {}), ...meta }
+    gmaps: { ...(p.gmaps ?? {}), ...meta },
   };
 
   return next;
@@ -262,7 +274,10 @@ async function enrichOne(
 
 async function main() {
   const flags = parseFlags(process.argv);
-  const onlyIds = flags.only?.split(",").map((s) => s.trim()).filter(Boolean);
+  const onlyIds = flags.only
+    ?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   const raw = await readFile(flags.inPath, "utf8");
   const providers = JSON.parse(raw) as Provider[];

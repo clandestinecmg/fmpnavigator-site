@@ -8,9 +8,7 @@ Sentry.init({
   dsn: "https://b516fe68eaa1200c1febb05469a97e38@o4510213501222912.ingest.us.sentry.io/4510213579276289",
 
   // Add optional integrations for additional features
-  integrations: [
-    Sentry.replayIntegration(),
-  ],
+  integrations: [Sentry.replayIntegration()],
   // Enable logs to be sent to Sentry
   enableLogs: true,
 

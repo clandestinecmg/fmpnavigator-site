@@ -26,7 +26,11 @@ export type Provider = {
   gmaps?: GmapsMeta | undefined;
 };
 
-type Flags = { enrichedPath: string; outPath: string; overwriteGeo?: boolean | undefined };
+type Flags = {
+  enrichedPath: string;
+  outPath: string;
+  overwriteGeo?: boolean | undefined;
+};
 
 function parseFlags(argv: string[]): Flags {
   let enrichedPath = "";
@@ -43,8 +47,12 @@ function parseFlags(argv: string[]): Flags {
   if (!outPath) throw new Error("Missing --out");
 
   return {
-    enrichedPath: path.isAbsolute(enrichedPath) ? enrichedPath : path.join(process.cwd(), enrichedPath),
-    outPath: path.isAbsolute(outPath) ? outPath : path.join(process.cwd(), outPath),
+    enrichedPath: path.isAbsolute(enrichedPath)
+      ? enrichedPath
+      : path.join(process.cwd(), enrichedPath),
+    outPath: path.isAbsolute(outPath)
+      ? outPath
+      : path.join(process.cwd(), outPath),
     overwriteGeo,
   };
 }
@@ -55,11 +63,16 @@ function indexById<T extends { id: string }>(arr: T[]): Map<string, T> {
   return m;
 }
 
-function mergeProvider(base: Provider, enriched: Provider | undefined, overwriteGeo?: boolean): Provider {
+function mergeProvider(
+  base: Provider,
+  enriched: Provider | undefined,
+  overwriteGeo?: boolean,
+): Provider {
   if (!enriched) return base;
 
-  const mergedGmaps: GmapsMeta | undefined =
-    enriched.gmaps ? { ...(base.gmaps ?? {}), ...enriched.gmaps } : base.gmaps;
+  const mergedGmaps: GmapsMeta | undefined = enriched.gmaps
+    ? { ...(base.gmaps ?? {}), ...enriched.gmaps }
+    : base.gmaps;
 
   const hasLoc =
     !!enriched.gmaps?.location &&
@@ -92,7 +105,9 @@ async function main() {
   const enr = JSON.parse(await readFile(enrichedPath, "utf8")) as Provider[];
 
   const byId = indexById(enr);
-  const merged = base.map((b) => mergeProvider(b, byId.get(b.id), overwriteGeo));
+  const merged = base.map((b) =>
+    mergeProvider(b, byId.get(b.id), overwriteGeo),
+  );
 
   await mkdir(path.dirname(outPath), { recursive: true });
   await writeFile(outPath, JSON.stringify(merged, null, 2), "utf8");

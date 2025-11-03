@@ -1,5 +1,5 @@
 // lib/firebase.ts
-'use client';
+"use client";
 
 import {
   initializeApp,
@@ -7,16 +7,24 @@ import {
   getApp,
   type FirebaseApp,
   type FirebaseOptions,
-} from 'firebase/app';
+} from "firebase/app";
 import {
   getAuth,
   type Auth,
   setPersistence,
   browserLocalPersistence,
   connectAuthEmulator,
-} from 'firebase/auth';
-import { getFirestore, type Firestore, connectFirestoreEmulator } from 'firebase/firestore';
-import { getStorage, type FirebaseStorage, connectStorageEmulator } from 'firebase/storage';
+} from "firebase/auth";
+import {
+  getFirestore,
+  type Firestore,
+  connectFirestoreEmulator,
+} from "firebase/firestore";
+import {
+  getStorage,
+  type FirebaseStorage,
+  connectStorageEmulator,
+} from "firebase/storage";
 
 /**
  * FMP Navigator — Firebase Web SDK (client)
@@ -45,30 +53,47 @@ let _authPersistenceSet = false;
 let _emulatorsConnected = false;
 
 function assertDefined<T>(val: T | undefined, name: string): T {
-  if (val === undefined || val === '') {
+  if (val === undefined || val === "") {
     const msg = `[firebase] Missing env: ${name}. Check your .env.local / Vercel env.`;
-    if (process.env.NODE_ENV === 'production') throw new Error(msg);
+    if (process.env.NODE_ENV === "production") throw new Error(msg);
     console.warn(msg);
   }
   return val as T;
 }
 
 function usingEmulators(): boolean {
-  return process.env.NEXT_PUBLIC_FIREBASE_EMULATOR === '1';
+  return process.env.NEXT_PUBLIC_FIREBASE_EMULATOR === "1";
 }
 
 export function getFirebaseApp(): FirebaseApp {
-  if (typeof window === 'undefined') {
-    throw new Error('[firebase] getFirebaseApp() called on server. Use firebase-admin instead.');
+  if (typeof window === "undefined") {
+    throw new Error(
+      "[firebase] getFirebaseApp() called on server. Use firebase-admin instead.",
+    );
   }
   if (_app) return _app;
 
   const cfg: FirebaseOptions = {
-    apiKey: assertDefined(process.env.NEXT_PUBLIC_FB_API_KEY, 'NEXT_PUBLIC_FB_API_KEY'),
-    authDomain: assertDefined(process.env.NEXT_PUBLIC_FB_AUTH_DOMAIN, 'NEXT_PUBLIC_FB_AUTH_DOMAIN'),
-    projectId: assertDefined(process.env.NEXT_PUBLIC_FB_PROJECT_ID, 'NEXT_PUBLIC_FB_PROJECT_ID'),
-    storageBucket: assertDefined(process.env.NEXT_PUBLIC_FB_STORAGE_BUCKET, 'NEXT_PUBLIC_FB_STORAGE_BUCKET'),
-    appId: assertDefined(process.env.NEXT_PUBLIC_FB_APP_ID, 'NEXT_PUBLIC_FB_APP_ID'),
+    apiKey: assertDefined(
+      process.env.NEXT_PUBLIC_FB_API_KEY,
+      "NEXT_PUBLIC_FB_API_KEY",
+    ),
+    authDomain: assertDefined(
+      process.env.NEXT_PUBLIC_FB_AUTH_DOMAIN,
+      "NEXT_PUBLIC_FB_AUTH_DOMAIN",
+    ),
+    projectId: assertDefined(
+      process.env.NEXT_PUBLIC_FB_PROJECT_ID,
+      "NEXT_PUBLIC_FB_PROJECT_ID",
+    ),
+    storageBucket: assertDefined(
+      process.env.NEXT_PUBLIC_FB_STORAGE_BUCKET,
+      "NEXT_PUBLIC_FB_STORAGE_BUCKET",
+    ),
+    appId: assertDefined(
+      process.env.NEXT_PUBLIC_FB_APP_ID,
+      "NEXT_PUBLIC_FB_APP_ID",
+    ),
     ...(process.env.NEXT_PUBLIC_FB_SENDER_ID
       ? { messagingSenderId: process.env.NEXT_PUBLIC_FB_SENDER_ID }
       : {}),
@@ -77,9 +102,15 @@ export function getFirebaseApp(): FirebaseApp {
       : {}),
   };
 
-  if (process.env.NODE_ENV !== 'production' && !(window as any).__fb_cfg_logged) {
-    const masked = String(cfg.apiKey ?? '').replace(/^(.{6}).+(.{4})$/, '$1•••$2');
-    console.log('[firebase] Web SDK config', { ...cfg, apiKey: masked });
+  if (
+    process.env.NODE_ENV !== "production" &&
+    !(window as any).__fb_cfg_logged
+  ) {
+    const masked = String(cfg.apiKey ?? "").replace(
+      /^(.{6}).+(.{4})$/,
+      "$1•••$2",
+    );
+    console.log("[firebase] Web SDK config", { ...cfg, apiKey: masked });
     (window as any).__fb_cfg_logged = true;
   }
 
@@ -96,8 +127,8 @@ export function getFirebaseAuth(): Auth {
   if (!_authPersistenceSet) {
     _authPersistenceSet = true;
     setPersistence(auth, browserLocalPersistence).catch((err) => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn('[firebase] Failed to set auth persistence', err);
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[firebase] Failed to set auth persistence", err);
       }
     });
   }
@@ -105,7 +136,9 @@ export function getFirebaseAuth(): Auth {
   // Optional emulators (local only)
   if (usingEmulators() && !_emulatorsConnected) {
     try {
-      connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+      connectAuthEmulator(auth, "http://127.0.0.1:9099", {
+        disableWarnings: true,
+      });
     } catch {
       // ignore if already connected
     }
@@ -121,7 +154,7 @@ export function getFirestoreDb(): Firestore {
 
   if (usingEmulators() && !_emulatorsConnected) {
     try {
-      connectFirestoreEmulator(db, '127.0.0.1', 8080);
+      connectFirestoreEmulator(db, "127.0.0.1", 8080);
     } catch {
       // ignore if already connected
     }
@@ -137,7 +170,7 @@ export function getFirebaseStorage(): FirebaseStorage {
 
   if (usingEmulators() && !_emulatorsConnected) {
     try {
-      connectStorageEmulator(storage, '127.0.0.1', 9199);
+      connectStorageEmulator(storage, "127.0.0.1", 9199);
     } catch {
       // ignore if already connected
     }

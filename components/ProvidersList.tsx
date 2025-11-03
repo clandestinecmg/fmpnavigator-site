@@ -1,8 +1,8 @@
 // components/ProvidersList.tsx
-'use client';
+"use client";
 
-import React from 'react';
-import clsx from 'clsx';
+import React from "react";
+import clsx from "clsx";
 
 export type LatLng = { lat: number; lng: number };
 
@@ -36,17 +36,21 @@ type Props = {
   onSelectAction: (id: string) => void;
 };
 
-export default function ProvidersList({ providers, selectedId, onSelectAction }: Props) {
+export default function ProvidersList({
+  providers,
+  selectedId,
+  onSelectAction,
+}: Props) {
   return (
     <aside aria-label="Direct-billing provider list" className="space-y-3">
       {providers.map((p) => {
         const active = p.id === selectedId;
         const name = p.gmaps?.formattedName ?? p.name;
-        const address = p.gmaps?.formattedAddress ?? p.city ?? '';
-        const phone = p.gmaps?.internationalPhone ?? p.phone ?? '';
+        const address = p.gmaps?.formattedAddress ?? p.city ?? "";
+        const phone = p.gmaps?.internationalPhone ?? p.phone ?? "";
         const url =
           p.gmaps?.url ??
-          (typeof p.lat === 'number' && typeof p.lng === 'number'
+          (typeof p.lat === "number" && typeof p.lng === "number"
             ? `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`
             : undefined);
 
@@ -54,14 +58,14 @@ export default function ProvidersList({ providers, selectedId, onSelectAction }:
           <article
             key={p.id}
             className={clsx(
-              'card transition outline-none cursor-pointer',
-              active ? 'ring-2 ring-[var(--brand)]' : 'hover:brightness-110'
+              "card transition outline-none cursor-pointer",
+              active ? 'ring-2 ring-(--brand)' : 'hover:brightness-110'
             )}
             role="button"
             tabIndex={0}
             onClick={() => onSelectAction(p.id)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') onSelectAction(p.id);
+              if (e.key === "Enter" || e.key === " ") onSelectAction(p.id);
             }}
             aria-pressed={active}
             aria-label={`Select ${name} on the map`}
@@ -69,8 +73,8 @@ export default function ProvidersList({ providers, selectedId, onSelectAction }:
             <header className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-semibold">{name}</h3>
-                <div className="small mt-1 text-[var(--muted-foreground)]">
-                  {p.regionTag ? `${p.regionTag} · ` : ''}
+                <div className="small mt-1 text-(--muted-foreground)">
+                  {p.regionTag ? `${p.regionTag} · ` : ""}
                   {address}
                 </div>
               </div>
@@ -84,20 +88,18 @@ export default function ProvidersList({ providers, selectedId, onSelectAction }:
 
             <div className="mt-3 space-y-2">
               {p.policy ? (
-                <p className="small text-[var(--muted-foreground)]">
+                <p className="small text-(--muted-foreground)">
                   {p.policy}
                 </p>
               ) : null}
               {p.caution ? (
-                <p className="small text-red-300">
-                  {p.caution}
-                </p>
+                <p className="small text-red-300">{p.caution}</p>
               ) : null}
 
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 {phone ? (
                   <a
-                    href={`tel:${phone.replace(/\s+/g, '')}`}
+                    href={`tel:${phone.replace(/\s+/g, "")}`}
                     className="btn btn-ghost small"
                     onClick={(e) => e.stopPropagation()}
                   >

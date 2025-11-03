@@ -11,7 +11,10 @@
     "providers:enrich:th": "tsx scripts/enrich-places.ts --in data/providers.json --out data/providers.enriched.json --country-bias=TH",
     "providers:merge": "tsx scripts/merge-providers.ts --enriched data/providers.enriched.json --out data/providers.final.json --overwrite-geo",
     "providers:apply": "cp data/providers.final.json data/providers.json && echo 'providers.json replaced by final'",
-    "providers:all": "npm run providers:enrich && npm run providers:merge && npm run providers:apply"
+    "providers:all": "npm run providers:enrich && npm run providers:merge && npm run providers:apply",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "fix": "eslint . --fix"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -31,6 +34,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^16.0.1",
     "local-ssl-proxy": "^2.0.5",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.20.6",

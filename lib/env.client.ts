@@ -4,5 +4,7 @@ function reqPublic(name: string) {
   return v;
 }
 
-export const NEXT_PUBLIC_RECAPTCHA_SITE_KEY = reqPublic('NEXT_PUBLIC_RECAPTCHA_SITE_KEY');
+export const NEXT_PUBLIC_RECAPTCHA_SITE_KEY = reqPublic(
+  "NEXT_PUBLIC_RECAPTCHA_SITE_KEY",
+);
 // Add other NEXT_PUBLIC_* here

@@ -1,4 +1,5 @@
-'use client';
+// components/AuthProvider.tsx
+"use client";
 
 import React, {
   createContext,
@@ -7,7 +8,8 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from 'react';
+  useCallback,
+} from "react";
 import {
   onAuthStateChanged,
   signOut,
@@ -20,8 +22,8 @@ import {
   browserLocalPersistence,
   type User,
   type UserCredential,
-} from 'firebase/auth';
-import { getFirebaseAuth } from '@/lib/firebase';
+} from "firebase/auth";
+import { getFirebaseAuth } from "@/lib/firebase";
 
 /**
  * AuthContext
@@ -57,12 +59,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = (): AuthContextType => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within <AuthProvider>');
+  if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");
   return ctx;
 };
 
 const REQUIRE_EMAIL_VERIFICATION =
-  typeof window !== 'undefined' && process.env.NEXT_PUBLIC_REQUIRE_EMAIL_VERIFICATION === '1';
+  typeof window !== "undefined" &&
+  process.env.NEXT_PUBLIC_REQUIRE_EMAIL_VERIFICATION === "1";
+
+// Hoisted so callbacks don't depend on a function recreated each render.
+function normalizeError(e: unknown): string {
+  if (!e || typeof e !== "object") return "Unexpected error";
+  const anyErr = e as { code?: string; message?: string };
+  switch (anyErr.code) {
+    case "auth/invalid-email":
+      return "The email address is invalid.";
+    case "auth/user-disabled":
+      return "This user account has been disabled.";
+    case "auth/user-not-found":
+      return "No user found with that email.";
+    case "auth/wrong-password":
+      return "Incorrect password.";
+    case "auth/email-already-in-use":
+      return "This email is already in use.";
+    case "auth/weak-password":
+      return "Password is too weak.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Please try again later.";
+    default:
+      return anyErr.message || "Authentication error";
+  }
+}
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -73,7 +100,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const didSetPersistence = useRef(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const auth = getFirebaseAuth();
 
@@ -93,31 +120,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     return unsub;
   }, []);
 
-  // Normalize common Firebase auth errors for UI
-  const normalizeError = (e: unknown): string => {
-    if (!e || typeof e !== 'object') return 'Unexpected error';
-    const anyErr = e as { code?: string; message?: string };
-    switch (anyErr.code) {
-      case 'auth/invalid-email':
-        return 'The email address is invalid.';
-      case 'auth/user-disabled':
-        return 'This user account has been disabled.';
-      case 'auth/user-not-found':
-        return 'No user found with that email.';
-      case 'auth/wrong-password':
-        return 'Incorrect password.';
-      case 'auth/email-already-in-use':
-        return 'This email is already in use.';
-      case 'auth/weak-password':
-        return 'Password is too weak.';
-      case 'auth/too-many-requests':
-        return 'Too many attempts. Please try again later.';
-      default:
-        return anyErr.message || 'Authentication error';
-    }
-  };
-
-  const signInEmail = async (email: string, password: string) => {
+  // Stable callbacks (no deps needed; state setters are stable; constants are hoisted)
+  const signInEmail = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
       const cred = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
@@ -127,9 +131,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setError(msg);
       throw e;
     }
-  };
+  }, []);
 
-  const signUpEmail = async (email: string, password: string) => {
+  const signUpEmail = useCallback(async (email: string, password: string) => {
     try {
       setError(null);
       const cred = await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
@@ -149,9 +153,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setError(msg);
       throw e;
     }
-  };
+  }, []);
 
-  const signOutUser = async () => {
+  const signOutUser = useCallback(async () => {
     try {
       setError(null);
       await signOut(getFirebaseAuth());
@@ -160,9 +164,9 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setError(msg);
       throw e;
     }
-  };
+  }, []);
 
-  const resetPassword = async (email: string) => {
+  const resetPassword = useCallback(async (email: string) => {
     try {
       setError(null);
       await sendPasswordResetEmail(getFirebaseAuth(), email);
@@ -171,21 +175,22 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       setError(msg);
       throw e;
     }
-  };
+  }, []);
 
-  const updateUserProfile = async (params: { displayName?: string; photoURL?: string }) => {
-    if (!getFirebaseAuth().currentUser) return;
+  const updateUserProfile = useCallback(async (params: { displayName?: string; photoURL?: string }) => {
+    const auth = getFirebaseAuth();
+    if (!auth.currentUser) return;
     try {
       setError(null);
-      await updateProfile(getFirebaseAuth().currentUser!, params);
+      await updateProfile(auth.currentUser, params);
       // reflect changes locally
-      setUser({ ...getFirebaseAuth().currentUser! });
+      setUser({ ...auth.currentUser });
     } catch (e) {
       const msg = normalizeError(e);
       setError(msg);
       throw e;
     }
-  };
+  }, []);
 
   const value = useMemo<AuthContextType>(
     () => ({
@@ -198,7 +203,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       resetPassword,
       updateUserProfile,
     }),
-    [user, loading, error]
+    [user, loading, error, signInEmail, signUpEmail, signOutUser, resetPassword, updateUserProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,7 +1,7 @@
 // components/ProvidersMap.tsx
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /** ---- Types shared with pages ---- */
 export type LatLng = { lat: number; lng: number };
@@ -35,8 +35,8 @@ type Props = {
   selectedId?: string | null;
 };
 
-const MAPS_API_KEY = process.env.NEXT_PUBLIC_MAPS_API_KEY ?? '';
-const MAP_ID = process.env.NEXT_PUBLIC_MAP_ID ?? '';
+const MAPS_API_KEY = process.env.NEXT_PUBLIC_MAPS_API_KEY ?? "";
+const MAP_ID = process.env.NEXT_PUBLIC_MAP_ID ?? "";
 
 type GMapScriptOptions = {
   apiKey: string;
@@ -50,11 +50,11 @@ let googleMapsLoadPromise: Promise<typeof google.maps> | null = null;
 function loadGoogleMapsScript({
   apiKey,
   libraries = [],
-  v = 'weekly',
+  v = "weekly",
 }: GMapScriptOptions): Promise<typeof google.maps> {
-  const WIN = typeof window !== 'undefined' ? (window as any) : undefined;
-  if (!WIN) return Promise.reject(new Error('window not available'));
-  if (!apiKey) return Promise.reject(new Error('Missing Google Maps API key'));
+  const WIN = typeof window !== "undefined" ? (window as any) : undefined;
+  if (!WIN) return Promise.reject(new Error("window not available"));
+  if (!apiKey) return Promise.reject(new Error("Missing Google Maps API key"));
 
   if (WIN.google?.maps?.importLibrary) {
     return Promise.resolve(WIN.google.maps);
@@ -81,7 +81,11 @@ function loadGoogleMapsScript({
         resolve(maps);
       } else {
         googleMapsLoadPromise = null;
-        reject(new Error('google.maps.importLibrary unavailable after loading Maps script'));
+        reject(
+          new Error(
+            "google.maps.importLibrary unavailable after loading Maps script",
+          ),
+        );
       }
     };
 
@@ -93,30 +97,30 @@ function loadGoogleMapsScript({
       const message =
         event instanceof ErrorEvent && event.message
           ? event.message
-          : typeof event === 'string' && event.length > 0
-          ? event
-          : 'Failed to load Google Maps script';
+          : typeof event === "string" && event.length > 0
+            ? event
+            : "Failed to load Google Maps script";
       reject(new Error(message));
     };
 
     const params = new URLSearchParams({
       key: apiKey,
       v,
-      loading: 'async',
-      callback: 'initMap',
+      loading: "async",
+      callback: "initMap",
     });
     if (libraries.length > 0) {
-      params.set('libraries', libraries.join(','));
+      params.set("libraries", libraries.join(","));
     }
 
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
     script.async = true;
     script.defer = true;
-    script.dataset.gmapsLoader = '1';
+    script.dataset.gmapsLoader = "1";
     script.onerror = (ev) => handleError(ev);
-    script.addEventListener('load', () => {
-      script.dataset.loaded = '1';
+    script.addEventListener("load", () => {
+      script.dataset.loaded = "1";
       if (WIN.google?.maps?.importLibrary) {
         handleReady();
       }
@@ -134,28 +138,39 @@ function loadGoogleMapsScript({
 
 /** Helper to fetch a place’s LatLng (and canonical URI) using the new Places JS API */
 async function placeIdToLatLng(
-  placeId: string
-): Promise<{ location: google.maps.LatLngLiteral | null; googleMapsURI?: string }> {
-  const { Place } = (await (google.maps as any).importLibrary('places')) as google.maps.PlacesLibrary;
+  placeId: string,
+): Promise<{
+  location: google.maps.LatLngLiteral | null;
+  googleMapsURI?: string;
+}> {
+  const { Place } = (await (google.maps as any).importLibrary(
+    "places",
+  )) as google.maps.PlacesLibrary;
   const place = new Place({ id: placeId });
   await place.fetchFields({
-    fields: ['location', 'googleMapsURI'], // NOTE: correct casing per @types/google.maps
+    fields: ["location", "googleMapsURI"], // NOTE: correct casing per @types/google.maps
   });
   const location =
     place.location instanceof google.maps.LatLng
       ? { lat: place.location.lat(), lng: place.location.lng() }
       : null;
   const googleMapsURI = (place as any).googleMapsURI as string | undefined;
-  if (typeof googleMapsURI === 'string') {
+  if (typeof googleMapsURI === "string") {
     return { location, googleMapsURI };
   }
   return { location };
 }
 
-export default function ProvidersMap({ providers, initial, selectedId }: Props) {
+export default function ProvidersMap({
+  providers,
+  initial,
+  selectedId,
+}: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
+  const markersRef = useRef<
+    Map<string, google.maps.marker.AdvancedMarkerElement>
+  >(new Map());
   const infoRef = useRef<google.maps.InfoWindow | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -165,7 +180,7 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
       lng: initial?.lng ?? 120.9842,
       zoom: initial?.zoom ?? 6,
     }),
-    [initial]
+    [initial],
   );
 
   useEffect(() => {
@@ -175,7 +190,7 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
       setError(null);
 
       if (!MAPS_API_KEY) {
-        setError('Missing NEXT_PUBLIC_MAPS_API_KEY.');
+        setError("Missing NEXT_PUBLIC_MAPS_API_KEY.");
         return;
       }
       if (!containerRef.current) return;
@@ -184,21 +199,26 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
         // 1) Load the script once
         const maps = await loadGoogleMapsScript({
           apiKey: MAPS_API_KEY,
-          libraries: ['places'], // we use new Places JS API client side for placeId -> LatLng
-          v: 'weekly',
+          libraries: ["places"], // we use new Places JS API client side for placeId -> LatLng
+          v: "weekly",
         });
         if (cancelled) return;
 
         const importLibrary = maps.importLibrary;
-        if (typeof importLibrary !== 'function') {
-          throw new Error('google.maps.importLibrary is not available after loading the Maps script.');
+        if (typeof importLibrary !== "function") {
+          throw new Error(
+            "google.maps.importLibrary is not available after loading the Maps script.",
+          );
         }
 
         // 2) Import libraries (modern API)
-        const { Map } = (await importLibrary.call(maps, 'maps')) as google.maps.MapsLibrary;
+        const { Map } = (await importLibrary.call(
+          maps,
+          "maps",
+        )) as google.maps.MapsLibrary;
         const { AdvancedMarkerElement } = (await importLibrary.call(
           maps,
-          'marker'
+          "marker",
         )) as google.maps.MarkerLibrary;
 
         // 3) Create or reuse the map
@@ -211,7 +231,7 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true,
-            gestureHandling: 'greedy',
+            gestureHandling: "greedy",
             heading: 0,
             tilt: 45,
           });
@@ -229,21 +249,22 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
           // Skip if we already created this marker and it exists
           if (markersRef.current.has(p.id)) {
             const m = markersRef.current.get(p.id)!;
-            const pos = (m.position as google.maps.LatLngLiteral | null) ?? null;
+            const pos =
+              (m.position as google.maps.LatLngLiteral | null) ?? null;
             if (pos) bounds.extend(pos);
             continue;
           }
 
           // Determine position: prefer explicit lat/lng; else try gmaps.location; else resolve placeId
           const explicit =
-            typeof p.lat === 'number' && typeof p.lng === 'number'
+            typeof p.lat === "number" && typeof p.lng === "number"
               ? ({ lat: p.lat, lng: p.lng } as google.maps.LatLngLiteral)
               : undefined;
 
           const enriched =
             p.gmaps?.location &&
-            typeof p.gmaps.location.lat === 'number' &&
-            typeof p.gmaps.location.lng === 'number'
+            typeof p.gmaps.location.lat === "number" &&
+            typeof p.gmaps.location.lng === "number"
               ? (p.gmaps.location as google.maps.LatLngLiteral)
               : undefined;
 
@@ -258,19 +279,19 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
 
             // Build content; prefer enriched canonical fields when present
             const displayName = p.gmaps?.formattedName ?? p.name;
-            const address = p.gmaps?.formattedAddress ?? p.city ?? '';
-            const phone = p.gmaps?.internationalPhone ?? p.phone ?? '';
+            const address = p.gmaps?.formattedAddress ?? p.city ?? "";
+            const phone = p.gmaps?.internationalPhone ?? p.phone ?? "";
             const url = p.gmaps?.url;
 
             const contentHTML = `
               <div style="min-width:240px">
                 <strong>${displayName}</strong><br/>
                 <div>${address}</div>
-                ${phone ? `<div>${phone}</div>` : ''}
+                ${phone ? `<div>${phone}</div>` : ""}
                 ${
                   p.policy
                     ? `<div style="margin-top:6px;font-size:12px;opacity:.8">${p.policy}</div>`
-                    : ''
+                    : ""
                 }
                 <div style="margin-top:8px">
                   ${
@@ -283,7 +304,7 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
             `;
 
             const info = infoRef.current!;
-            marker.addListener('gmp-click', () => {
+            marker.addListener("gmp-click", () => {
               info.setContent(contentHTML);
               // IMPORTANT: do not pass "position" in the open() options — not part of the signature
               info.open({ anchor: marker, map });
@@ -301,8 +322,12 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
             // Defer: resolve placeId → position, then create marker
             const t = (async () => {
               try {
-                const { location, googleMapsURI } = await placeIdToLatLng(placeId);
-                const resolved = location ?? { lat: center.lat, lng: center.lng };
+                const { location, googleMapsURI } =
+                  await placeIdToLatLng(placeId);
+                const resolved = location ?? {
+                  lat: center.lat,
+                  lng: center.lng,
+                };
                 // If we learned a canonical URI and no server-enriched URL exists, attach it to info content
                 if (googleMapsURI && !p.gmaps?.url) {
                   // Mutating local `p` is fine here; used only for building info content
@@ -310,7 +335,11 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
                 }
                 createMarker(resolved);
               } catch (e) {
-                console.warn('[ProvidersMap] placeId resolve failed for', p.id, e);
+                console.warn(
+                  "[ProvidersMap] placeId resolve failed for",
+                  p.id,
+                  e,
+                );
               }
             })();
             tasks.push(t);
@@ -335,8 +364,8 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
           }
         }
       } catch (e: any) {
-        console.error('[ProvidersMap] failed to init Google Maps', e);
-        setError(e?.message ?? 'Failed to load Google Maps');
+        console.error("[ProvidersMap] failed to init Google Maps", e);
+        setError(e?.message ?? "Failed to load Google Maps");
       }
     }
 
@@ -349,66 +378,71 @@ export default function ProvidersMap({ providers, initial, selectedId }: Props) 
   }, [providers]);
 
   // Respond to selection: pan/zoom and open info
-useEffect(() => {
-  const map = mapRef.current;
-  const info = infoRef.current;
-  if (!map || !selectedId) return;
+  useEffect(() => {
+    const map = mapRef.current;
+    const info = infoRef.current;
+    if (!map || !selectedId) return;
 
-  const marker = markersRef.current.get(selectedId);
-  if (!marker) return;
+    const marker = markersRef.current.get(selectedId);
+    if (!marker) return;
 
-  const pos = marker.position as google.maps.LatLngLiteral | null;
-  if (!pos) return;
+    const pos = marker.position as google.maps.LatLngLiteral | null;
+    if (!pos) return;
 
-  // Smooth zoom/pan
-  map.panTo(pos);
-  if ((map.getZoom() ?? 0) < 14) map.setZoom(14);
+    // Smooth zoom/pan
+    map.panTo(pos);
+    if ((map.getZoom() ?? 0) < 14) map.setZoom(14);
 
-  // Always rebuild the content for the selected provider
-  const p = providers.find((x) => x.id === selectedId);
-  if (!p || !info) return;
+    // Always rebuild the content for the selected provider
+    const p = providers.find((x) => x.id === selectedId);
+    if (!p || !info) return;
 
-  const displayName = p.gmaps?.formattedName ?? p.name;
-  const address = p.gmaps?.formattedAddress ?? p.city ?? '';
-  const phone = p.gmaps?.internationalPhone ?? p.phone ?? '';
-  const url = p.gmaps?.url;
-  const fallback = `https://www.google.com/maps/dir/?api=1&destination=${pos.lat},${pos.lng}`;
+    const displayName = p.gmaps?.formattedName ?? p.name;
+    const address = p.gmaps?.formattedAddress ?? p.city ?? "";
+    const phone = p.gmaps?.internationalPhone ?? p.phone ?? "";
+    const url = p.gmaps?.url;
+    const fallback = `https://www.google.com/maps/dir/?api=1&destination=${pos.lat},${pos.lng}`;
 
-  const contentHTML = `
+    const contentHTML = `
     <div style="min-width:240px">
       <strong>${displayName}</strong><br/>
       <div>${address}</div>
-      ${phone ? `<div>${phone}</div>` : ''}
+      ${phone ? `<div>${phone}</div>` : ""}
       <div style="margin-top:8px">
-        <a target="_blank" rel="noopener" href="${url ?? fallback}">${url ? 'Open in Google&nbsp;Maps' : 'Directions'}</a>
+        <a target="_blank" rel="noopener" href="${url ?? fallback}">${url ? "Open in Google&nbsp;Maps" : "Directions"}</a>
       </div>
     </div>
   `;
 
-  // Ensure we update content every time selection changes
-  info.setContent(contentHTML);
-  info.open({ anchor: marker, map });
-}, [selectedId, providers]);
+    // Ensure we update content every time selection changes
+    info.setContent(contentHTML);
+    info.open({ anchor: marker, map });
+  }, [selectedId, providers]);
 
   return (
-    <div className="card bg-[var(--card)] text-[var(--text)]">
+    <div className="card bg-(--card) text-(--text)">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="h2">Direct-Billing Providers</h2>
         {error ? <span className="small text-red-400">{error}</span> : null}
       </div>
 
-      <div ref={containerRef} className="w-full h-[520px] rounded-xl overflow-hidden" />
+      <div
+        ref={containerRef}
+        className="w-full h-[520px] rounded-xl overflow-hidden"
+      />
 
       {(!MAPS_API_KEY || !MAP_ID) && (
         <p className="small mt-3">
           {!MAPS_API_KEY && (
             <>
-              Set <code>NEXT_PUBLIC_MAPS_API_KEY</code> in your <code>.env</code>.{' '}
+              Set <code>NEXT_PUBLIC_MAPS_API_KEY</code> in your{" "}
+              <code>.env</code>.{" "}
             </>
           )}
           {!MAP_ID && (
             <>
-              Set <code>NEXT_PUBLIC_MAP_ID</code> (Vector Map ID) in your <code>.env</code>.{' '}
+              Set <code>NEXT_PUBLIC_MAP_ID</code> (Vector Map ID) in your{" "}
+              <code>.env</code>.{" "}
             </>
           )}
           Then restart the dev server.
