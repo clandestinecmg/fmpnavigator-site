@@ -1,41 +1,38 @@
 // next.config.ts
-import { withSentryConfig, type SentryBuildOptions } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
-  // Turbopack is enabled by the CLI flag; no `experimental.turbo` key here.
-  experimental: {
-    // Keep only keys that exist on ExperimentalConfig for Next 16
-    serverComponentsExternalPackages: ["firebase-admin"],
-    // If you previously relied on `esmExternals`, remove it; Next 16 handles this automatically.
-  },
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-  },
+  // Next.js 15/16: use top-level serverExternalPackages instead of experimental.*
+  serverExternalPackages: ["firebase-admin"],
+
+  // Replace deprecated images.domains with remotePatterns
   images: {
-    domains: ["fmpnavigator.org"],
-    formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "*.googleusercontent.com" },
+      { protocol: "https", hostname: "maps.googleapis.com" },
+      { protocol: "https", hostname: "storage.googleapis.com" },
+      // add others you really use (CDNs, static hosts) to keep attack surface tight
+    ],
   },
-  env: {
-    NEXT_PUBLIC_SITE_URL:
-      process.env.NEXT_PUBLIC_SITE_URL ?? "https://fmpnavigator.org",
-  },
+
+  // Leave off prod browser source maps unless you explicitly want them public
+  productionBrowserSourceMaps: false,
 };
 
-// Build Sentry options while OMITTING authToken when it’s not set.
-const sentryOptions: SentryBuildOptions = {
+export default withSentryConfig(nextConfig, {
   org: "fmp-navigator",
   project: "javascript-nextjs",
+  // CI-only chatter
   silent: !process.env.CI,
-  widenClientFileUpload: true,
-  disableLogger: true,
-  automaticVercelMonitors: true,
-  ...(process.env.SENTRY_AUTH_TOKEN
-    ? { authToken: process.env.SENTRY_AUTH_TOKEN }
-    : {}),
-  // If you want to be explicit about sourcemaps later, use:
-  // sourcemaps: { disable: false },
-};
 
-export default withSentryConfig(nextConfig, sentryOptions);
+  // Smaller bundles by stripping Sentry logger calls
+  disableLogger: true,
+
+  // Optional; enables Vercel cron monitor auto-instrumentation
+  automaticVercelMonitors: true,
+
+  // NOTE: don't pass authToken as undefined — omit entirely so types are happy.
+  // If you set SENTRY_AUTH_TOKEN in env, the Sentry CLI will pick it up.
+});

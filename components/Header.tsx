@@ -15,6 +15,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/", exact: true },
   { label: "About", href: "/about" },
+  { label: "VCL Support", href: "/VCL" },
   { label: "App", href: "/app" },
   { label: "Providers", href: "/providers" },
   { label: "Resources", href: "/resources" },
