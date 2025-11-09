@@ -24,35 +24,26 @@ export default function AdvocacyPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="card p-5">
           <h2 className="h4 mb-1">FOIA Tracker</h2>
-          <p className="small muted">
-            Status of requests, responses, and “no record” letters.
-          </p>
+          <p className="small muted">Status of requests, responses, and “no record” letters.</p>
           <div className="mt-3">
-            <Link href="#foia" className="btn btn-secondary">
-              View log
-            </Link>
+            {/* switched to btn-primary */}
+            <Link href="#foia" className="btn btn-primary">View log</Link>
           </div>
         </div>
         <div className="card p-5">
           <h2 className="h4 mb-1">Data Snapshots</h2>
-          <p className="small muted">
-            Aggregated public metrics (claims, processing times, networks).
-          </p>
+          <p className="small muted">Aggregated public metrics (claims, processing times, networks).</p>
           <div className="mt-3">
-            <Link href="#data" className="btn btn-secondary">
-              See data
-            </Link>
+            {/* switched to btn-primary */}
+            <Link href="#data" className="btn btn-primary">See data</Link>
           </div>
         </div>
         <div className="card p-5">
           <h2 className="h4 mb-1">Partner Briefings</h2>
-          <p className="small muted">
-            Slide decks and one-pagers used with providers and stakeholders.
-          </p>
+          <p className="small muted">Slide decks and one-pagers used with providers and stakeholders.</p>
           <div className="mt-3">
-            <Link href="#briefings" className="btn btn-secondary">
-              Browse
-            </Link>
+            {/* switched to btn-primary */}
+            <Link href="#briefings" className="btn btn-primary">Browse</Link>
           </div>
         </div>
       </div>
@@ -60,10 +51,7 @@ export default function AdvocacyPage() {
       {/* FOIA log */}
       <section id="foia" className="space-y-3">
         <h2 className="h2">FOIA Requests</h2>
-        <p className="muted">
-          We publish request subjects, agencies, dates, and outcomes for
-          accountability.
-        </p>
+        <p className="muted">We publish request subjects, agencies, dates, and outcomes for accountability.</p>
         <div className="card overflow-x-auto">
           <table className="w-full small">
             <thead>
@@ -76,15 +64,12 @@ export default function AdvocacyPage() {
               </tr>
             </thead>
             <tbody>
-              {/* TODO: Replace rows with dynamic content later */}
               <tr className="border-t border-(--border)">
                 <td className="py-2 px-3">—</td>
                 <td className="py-2 px-3">—</td>
                 <td className="py-2 px-3">—</td>
                 <td className="py-2 px-3">—</td>
-                <td className="py-2 px-3">
-                  <span className="muted">None yet</span>
-                </td>
+                <td className="py-2 px-3"><span className="muted">None yet</span></td>
               </tr>
             </tbody>
           </table>
@@ -94,29 +79,21 @@ export default function AdvocacyPage() {
       {/* Data snapshots */}
       <section id="data" className="space-y-3">
         <h2 className="h2">Data Snapshots</h2>
-        <p className="muted">
-          Non-PII, public metrics that help illustrate needs and opportunities
-          overseas.
-        </p>
+        <p className="muted">Non-PII, public metrics that help illustrate needs and opportunities overseas.</p>
         <div className="card p-5 space-y-2">
           <ul className="list-disc pl-5 small">
             <li>Claim volumes and trends (public reports)</li>
             <li>Direct-billing footprint by country/region</li>
             <li>Typical travel burden to reach providers</li>
           </ul>
-          <p className="small muted">
-            TODO: Wire this to a JSON/CSV feed or Firestore collection when
-            ready.
-          </p>
+          <p className="small muted">TODO: Wire this to a JSON/CSV feed or Firestore collection when ready.</p>
         </div>
       </section>
 
       {/* Briefings */}
       <section id="briefings" className="space-y-3">
         <h2 className="h2">Partner Briefings</h2>
-        <p className="muted">
-          Outreach decks and one-pagers used with hospitals, VSOs, and agencies.
-        </p>
+        <p className="muted">Outreach decks and one-pagers used with hospitals, VSOs, and agencies.</p>
         <div className="card p-5 space-y-2">
           <ul className="list-disc pl-5 small">
             <li>Intro deck (providers)</li>
@@ -125,10 +102,7 @@ export default function AdvocacyPage() {
           </ul>
           <p className="small">
             Need to share materials? Email us at{" "}
-            <a
-              className="link-underline"
-              href="mailto:support@fmpnavigator.org"
-            >
+            <a className="btn btn-primary no-underline" href="mailto:support@fmpnavigator.org">
               support@fmpnavigator.org
             </a>
             .
@@ -142,11 +116,7 @@ export default function AdvocacyPage() {
         <div className="card p-5 space-y-2">
           <p className="small">
             If you have public data or documents we should review, please send
-            them via the{" "}
-            <Link href="/contact" className="link-underline">
-              contact form
-            </Link>{" "}
-            or email.
+            them via the <strong><Link href="/contact">contact form</Link></strong> or email.
           </p>
           <p className="small muted">
             We never publish sensitive personal information. All posted docs are

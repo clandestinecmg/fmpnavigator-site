@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type Attachment = { filename: string; content: string | null }; // data:*/*;base64,...
+type Attachment = { filename: string; content: string | null };
 type FormState =
   | { status: "idle" }
   | { status: "submitting" }
@@ -19,9 +19,7 @@ function useRecaptcha(siteKey: string, devBypass: boolean) {
     if (!siteKey || typeof window === "undefined") return;
     if ((window as any).grecaptcha?.execute) return;
 
-    const existing = document.querySelector<HTMLScriptElement>(
-      'script[data-recaptcha="1"]',
-    );
+    const existing = document.querySelector<HTMLScriptElement>('script[data-recaptcha="1"]');
     if (existing) return;
 
     const s = document.createElement("script");
@@ -49,7 +47,7 @@ function useRecaptcha(siteKey: string, devBypass: boolean) {
           } else if (tries > 40) {
             clearInterval(id);
             resolve();
-          } // ~4s soft wait
+          }
         }, 100);
       }
     });
@@ -76,21 +74,16 @@ export default function ContactPage() {
 
   const disabled = useMemo(() => state.status === "submitting", [state.status]);
 
-  function triggerFilePicker() {
-    fileInputRef.current?.click();
-  }
+  function triggerFilePicker() { fileInputRef.current?.click(); }
 
   async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.currentTarget.files?.[0];
     if (!f) {
-      setFileName("");
-      setFileDataUrl(null);
-      return;
+      setFileName(""); setFileDataUrl(null); return;
     }
     if (f.size > 5 * 1024 * 1024) {
       setState({ status: "error", message: "Attachment must be ≤ 5 MB." });
-      e.currentTarget.value = "";
-      return;
+      e.currentTarget.value = ""; return;
     }
     setState({ status: "idle" });
     setFileName(f.name);
@@ -101,8 +94,7 @@ export default function ContactPage() {
   }
 
   function clearAttachment() {
-    setFileName("");
-    setFileDataUrl(null);
+    setFileName(""); setFileDataUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -122,30 +114,17 @@ export default function ContactPage() {
 
     try {
       setState({ status: "submitting" });
-
       const token = await recaptcha.execute("contact");
-      const attachment: Attachment | null = fileDataUrl
-        ? { filename: fileName, content: fileDataUrl }
-        : null;
+      const attachment: Attachment | null = fileDataUrl ? { filename: fileName, content: fileDataUrl } : null;
 
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token,
-          name, // becomes from_name on the server
-          email, // becomes from_email on the server
-          subject,
-          message,
-          attachment,
-        }),
+        body: JSON.stringify({ token, name, email, subject, message, attachment }),
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const detail = data?.error?.message || "Failed to send message";
-        throw new Error(detail);
-      }
+      if (!res.ok) throw new Error(data?.error?.message || "Failed to send message");
 
       setState({ status: "success" });
       if (nameRef.current) nameRef.current.value = "";
@@ -154,10 +133,7 @@ export default function ContactPage() {
       if (messageRef.current) messageRef.current.value = "";
       clearAttachment();
     } catch (err: any) {
-      setState({
-        status: "error",
-        message: err?.message || "Something went wrong",
-      });
+      setState({ status: "error", message: err?.message || "Something went wrong" });
     }
   }
 
@@ -172,25 +148,16 @@ export default function ContactPage() {
             lists? Send us a note and we’ll get back to you asap.
           </p>
           <ul className="mt-4 small space-y-1">
-            <li>
-              • Secure form with reCAPTCHA v3
-              {DEV_BYPASS ? " (dev bypass active)" : ""}
-            </li>
+            <li>• Secure form with reCAPTCHA v3{DEV_BYPASS ? " (dev bypass active)" : ""}</li>
             <li>• Optional attachment (≤ 5 MB)</li>
           </ul>
         </div>
 
-        {/* Accent card */}
         <div className="card p-0 overflow-hidden">
-          <div
-            aria-hidden
-            className="h-full w-full"
-            style={{
-              background:
-                "linear-gradient(135deg, rgba(2,132,199,0.12), rgba(15,23,42,0.08))",
-              minHeight: 220,
-            }}
-          />
+          <div aria-hidden className="h-full w-full" style={{
+            background: "linear-gradient(135deg, rgba(2,132,199,0.12), rgba(15,23,42,0.08))",
+            minHeight: 220,
+          }} />
         </div>
       </div>
 
@@ -198,73 +165,30 @@ export default function ContactPage() {
       <form onSubmit={onSubmit} className="max-w-2xl space-y-5 card">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="name" className="label">
-              Name
-            </label>
-            <input
-              id="name"
-              ref={nameRef}
-              type="text"
-              autoComplete="name"
-              required
-              className="input"
-              disabled={disabled}
-            />
+            <label htmlFor="name" className="label">Name</label>
+            <input id="name" ref={nameRef} type="text" autoComplete="name" required className="input" disabled={disabled} />
           </div>
           <div>
-            <label htmlFor="email" className="label">
-              Email
-            </label>
-            <input
-              id="email"
-              ref={emailRef}
-              type="email"
-              autoComplete="email"
-              required
-              className="input"
-              disabled={disabled}
-            />
+            <label htmlFor="email" className="label">Email</label>
+            <input id="email" ref={emailRef} type="email" autoComplete="email" required className="input" disabled={disabled} />
           </div>
         </div>
 
         <div>
-          <label htmlFor="subject" className="label">
-            Subject
-          </label>
-          <input
-            id="subject"
-            ref={subjectRef}
-            type="text"
-            required
-            className="input"
-            disabled={disabled}
-          />
+          <label htmlFor="subject" className="label">Subject</label>
+          <input id="subject" ref={subjectRef} type="text" required className="input" disabled={disabled} />
         </div>
 
         <div>
-          <label htmlFor="message" className="label">
-            Message
-          </label>
-          <textarea
-            id="message"
-            ref={messageRef}
-            required
-            rows={6}
-            className="textarea"
-            disabled={disabled}
-          />
+          <label htmlFor="message" className="label">Message</label>
+          <textarea id="message" ref={messageRef} required rows={6} className="textarea" disabled={disabled} />
         </div>
 
         {/* Attachment */}
         <div>
           <span className="label">Attachment (optional)</span>
           <div className="flex items-center gap-3 mt-1">
-            <button
-              type="button"
-              onClick={triggerFilePicker}
-              className="btn btn-secondary"
-              disabled={disabled}
-            >
+            <button type="button" onClick={triggerFilePicker} className="btn btn-primary" disabled={disabled}>
               Add attachment
             </button>
             {fileName ? (
@@ -272,11 +196,7 @@ export default function ContactPage() {
                 <span className="small">
                   Selected: <span className="font-medium">{fileName}</span>
                 </span>
-                <button
-                  type="button"
-                  onClick={clearAttachment}
-                  className="small link-underline"
-                >
+                <button type="button" onClick={clearAttachment} className="btn btn-ghost small">
                   Remove
                 </button>
               </>
@@ -298,34 +218,20 @@ export default function ContactPage() {
             {state.status === "submitting" ? "Sending…" : "Send message"}
           </button>
           {state.status === "success" && (
-            <span role="status" className="small text-green-600">
-              Sent! We’ll reply soon.
-            </span>
+            <span role="status" className="small text-green-600">Sent! We’ll reply soon.</span>
           )}
           {state.status === "error" && (
-            <span role="alert" className="small text-red-600">
-              {state.message}
-            </span>
+            <span role="alert" className="small text-red-600">{state.message}</span>
           )}
         </div>
 
         <p className="small muted">
           This site is protected by reCAPTCHA and the Google{" "}
-          <a
-            className="link-underline"
-            href="https://policies.google.com/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
             Privacy Policy
           </a>{" "}
           and{" "}
-          <a
-            className="link-underline"
-            href="https://policies.google.com/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
             Terms of Service
           </a>{" "}
           apply.

@@ -8,8 +8,8 @@ import UnderConstructionBanner from "@/components/UnderConstructionBanner";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fmpnavigator.org";
 
-// Fixed banner height (keep header = 4rem). Tweak here if you adjust banner padding.
-const BANNER_REM = 3; // ~48px
+// Increased to match the larger banner height.
+const BANNER_REM = 4; // was 3
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0A1B33", // --navy from globals.css
+  themeColor: "#0A1B33",
 };
 
 export default function RootLayout({
@@ -64,8 +64,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Keep this as a normal React component (Server Component) that returns <html><body>…
-  // No client-only code here.
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-dvh bg-(--background) text-(--foreground) antialiased">
@@ -86,16 +84,19 @@ export default function RootLayout({
         {/* Site-wide banner (fixed) */}
         <UnderConstructionBanner />
 
-        {/* Offset: header (4rem) + banner + safe-area */}
+        {/* Offset = header (4rem) + larger banner + safe-area */}
         <div
+          className="min-h-dvh flex flex-col"
           style={{
             paddingTop: `calc(4rem + ${BANNER_REM}rem + env(safe-area-inset-top))`,
           }}
         >
           <Header />
-          <main id="main" role="main" className="container mx-auto px-4 py-6">
+
+          <main id="main" role="main" className="container mx-auto px-4 py-6 grow">
             <Providers>{children}</Providers>
           </main>
+
           <Footer />
         </div>
       </body>

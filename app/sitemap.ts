@@ -19,7 +19,7 @@ const routes: string[] = [
   "/terms",
   "/signin",
   "/testers",
-  "/VCL",            // your new Veterans Crisis Support page
+  "/vcl",            // your new Veterans Crisis Support page
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

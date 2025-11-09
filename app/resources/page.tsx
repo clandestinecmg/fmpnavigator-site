@@ -1,4 +1,6 @@
 // app/resources/page.tsx
+import Link from "next/link";
+
 export default function ResourcesPage() {
   return (
     <section className="container py-12">
@@ -24,11 +26,7 @@ export default function ResourcesPage() {
         <article className="card sm:col-span-2">
           <h2 className="font-semibold">Contact support</h2>
           <p className="small mt-1">
-            Need help? Head to the{" "}
-            <a className="link-underline" href="/contact">
-              contact page
-            </a>{" "}
-            and reach out.
+            Need help? Head to the <strong><Link href="/contact">contact page</Link></strong> and reach out.
           </p>
         </article>
       </div>

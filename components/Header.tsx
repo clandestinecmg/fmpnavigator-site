@@ -15,7 +15,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/", exact: true },
   { label: "About", href: "/about" },
-  { label: "VCL Support", href: "/VCL" },
+  { label: "VCL Support", href: "/vcl" },
   { label: "App", href: "/app" },
   { label: "Providers", href: "/providers" },
   { label: "Resources", href: "/resources" },
@@ -42,7 +42,7 @@ export default function Header() {
     process.env.NODE_ENV !== "production" ||
     (typeof window !== "undefined" && window.location.hostname === "localhost");
 
-  // Defer close on route change to avoid synchronous setState inside effect
+  // Defer close on route change
   useEffect(() => {
     const id = requestAnimationFrame(() => setOpen(false));
     return () => cancelAnimationFrame(id);
@@ -73,7 +73,7 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Desktop nav */}
+        {/* Desktop nav (no underlines) */}
         <nav
           className="hidden md:flex items-center gap-4"
           role="navigation"
@@ -89,7 +89,7 @@ export default function Header() {
                 className={[
                   "rounded px-2 py-1 text-sm transition-colors",
                   active
-                    ? "font-semibold text-(--ink) underline underline-offset-4"
+                    ? "font-semibold text-(--ink)"
                     : "text-(--muted) hover:text-(--ink)",
                 ].join(" ")}
               >
@@ -145,7 +145,7 @@ export default function Header() {
                     className={[
                       "block rounded px-2 py-2 text-base",
                       active
-                        ? "font-semibold text-(--ink) underline underline-offset-4"
+                        ? "font-semibold text-(--ink)"
                         : "text-(--muted) hover:text-(--ink)",
                     ].join(" ")}
                   >

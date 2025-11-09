@@ -27,7 +27,7 @@ export default function PrivacyPage() {
           By using{" "}
           <a
             href="https://fmpnavigator.org"
-            className="text-blue-500 underline"
+            className="btn btn-primary no-underline"
           >
             fmpnavigator.org
           </a>{" "}
@@ -154,7 +154,7 @@ export default function PrivacyPage() {
           exercise these rights, contact{" "}
           <a
             href="mailto:support@fmpnavigator.org"
-            className="text-blue-500 underline"
+            className="btn btn-primary no-underline"
           >
             support@fmpnavigator.org
           </a>
@@ -197,7 +197,7 @@ export default function PrivacyPage() {
           Questions or requests? Email{" "}
           <a
             href="mailto:support@fmpnavigator.org"
-            className="text-blue-500 underline"
+            className="btn btn-primary no-underline"
           >
             support@fmpnavigator.org
           </a>

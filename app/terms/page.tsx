@@ -27,7 +27,7 @@ export default function TermsPage() {
           accessing or using our website (
           <a
             href="https://fmpnavigator.org"
-            className="text-blue-500 underline"
+            className="btn btn-primary no-underline"
           >
             fmpnavigator.org
           </a>
@@ -74,7 +74,7 @@ export default function TermsPage() {
           We respect your privacy. Personal data collected through forms,
           subscriptions, or email communication is handled in accordance with
           our{" "}
-          <a href="/privacy" className="text-blue-500 underline">
+          <a href="/privacy" className="btn btn-primary no-underline">
             Privacy Policy
           </a>
           . We do not sell or share personal data with third parties without
@@ -119,7 +119,7 @@ export default function TermsPage() {
           For questions about these Terms or the Service, contact us at{" "}
           <a
             href="mailto:support@fmpnavigator.org"
-            className="text-blue-500 underline"
+            className="btn btn-primary no-underline"
           >
             support@fmpnavigator.org
           </a>

@@ -6,7 +6,13 @@
  * - Accessible focus styles
  * - Small flag-emblem mark (inline SVG) at left
  */
-type FooterProps = { year?: number };
+import type { ReactNode } from "react";
+
+type FooterProps = {
+  year?: number;
+  /** Optional children supported to satisfy any usage patterns */
+  children?: ReactNode;
+};
 
 export default function Footer({
   year = new Date().getFullYear(),
@@ -50,18 +56,12 @@ export default function Footer({
           </span>
         </div>
 
-        {/* Links */}
-        <nav aria-label="Footer" className="flex items-center gap-4">
-          <a
-            href="/privacy"
-            className="small underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded px-1"
-          >
+        {/* Links (buttons, no underline) */}
+        <nav aria-label="Footer" className="flex items-center gap-3">
+          <a href="/privacy" className="btn btn-secondary no-underline">
             Privacy
           </a>
-          <a
-            href="/terms"
-            className="small underline-offset-4 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded px-1"
-          >
+          <a href="/terms" className="btn btn-secondary no-underline">
             Terms
           </a>
         </nav>
