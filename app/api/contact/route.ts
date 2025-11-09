@@ -66,12 +66,27 @@ export async function POST(req: NextRequest) {
   // Env
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || "";
   const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_RECAPTCHA_BYPASS === "1";
-  const EMAILJS_SERVICE_ID = reqEnv("NEXT_PUBLIC_EMAILJS_SERVICE_ID");
-  const EMAILJS_TEMPLATE_ID = reqEnv("NEXT_PUBLIC_EMAILJS_TEMPLATE_ID");
-  const EMAILJS_PUBLIC_KEY = reqEnv("NEXT_PUBLIC_EMAILJS_PUBLIC_KEY");
+  const EMAILJS_SERVICE_ID = reqEnv("EMAILJS_SERVICE_ID");
+  const EMAILJS_TEMPLATE_ID = reqEnv("EMAILJS_TEMPLATE_ID");
+  const EMAILJS_PUBLIC_KEY = reqEnv("EMAILJS_PUBLIC_KEY");
   const EMAILJS_PRIVATE_KEY = reqEnv("EMAILJS_PRIVATE_KEY");
   const EMAILJS_AUTOREPLY_TEMPLATE_ID =
     process.env.EMAILJS_AUTOREPLY_TEMPLATE_ID || "";
+
+  // Guard: Ensure required environment variables exist
+  const requiredEnvs = {
+    RECAPTCHA_SECRET,
+    EMAILJS_SERVICE_ID,
+    EMAILJS_TEMPLATE_ID,
+    EMAILJS_PUBLIC_KEY,
+    EMAILJS_PRIVATE_KEY,
+  };
+  for (const [key, value] of Object.entries(requiredEnvs)) {
+    if (!value || value === "") {
+      console.error("[contact][env][missing]", key);
+      return jsonError(500, "SERVER_MISCONFIG", `Missing required environment variable: ${key}`);
+    }
+  }
 
   // Body
   let body: ContactBody;
