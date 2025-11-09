@@ -1,0 +1,120 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:00"
+      timezone: "Asia/Bangkok"
+    open-pull-requests-limit: 10
+    rebase-strategy: "auto"
+    commit-message:
+      prefix: "deps"
+      include: "scope"
+    reviewers:
+      - "clandestinecmg"
+    labels:
+      - "dependencies"
+      - "automated"
+    groups:
+      nextjs:
+        patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "eslint-config-next"
+        update-types:
+          - "minor"
+          - "patch"
+      eslint:
+        patterns:
+          - "eslint"
+          - "@typescript-eslint/*"
+          - "eslint-*"
+          - "prettier"
+          - "lint-staged"
+        update-types:
+          - "minor"
+          - "patch"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "postcss"
+          - "autoprefixer"
+        update-types:
+          - "minor"
+          - "patch"
+      testing:
+        patterns:
+          - "jest"
+          - "@types/jest"
+          - "ts-jest"
+          - "vitest"
+          - "@testing-library/*"
+        update-types:
+          - "minor"
+          - "patch"
+      types:
+        patterns:
+          - "@types/*"
+        update-types:
+          - "minor"
+          - "patch"
+      firebase:
+        patterns:
+          - "firebase"
+          - "firebase-admin"
+          - "firebase-tools"
+        update-types:
+          - "minor"
+          - "patch"
+      sentry:
+        patterns:
+          - "@sentry/*"
+          - "sentry-*"
+        update-types:
+          - "minor"
+          - "patch"
+      misc-minor-patch:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "next"
+          - "react"
+          - "react-dom"
+          - "eslint*"
+          - "@typescript-eslint/*"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "postcss"
+          - "autoprefixer"
+          - "jest"
+          - "@testing-library/*"
+          - "@types/*"
+          - "firebase*"
+          - "@sentry/*"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "04:30"
+      timezone: "Asia/Bangkok"
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns:
+          - "*"
