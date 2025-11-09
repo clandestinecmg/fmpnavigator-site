@@ -121,4 +121,4 @@ notes.txt
 # - Keep package-lock.json committed for deterministic builds.
 # - Restrict public API keys at the provider (HTTP referrer/domain).
 # - Store real secrets ONLY in Vercel env vars (Project → Settings → Env).
-# ==========================================================
+# ==========================================================.vercel # keep it, if not already present
