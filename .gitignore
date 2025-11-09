@@ -1,9 +1,9 @@
 # ==========================================================
-#  FMP Navigator — Hardened .gitignore
-#  Prevents leaks of credentials, env files, and secrets
+# FMP Navigator — Hardened .gitignore (Next.js + npm)
+# Protect env/secrets, prevent noisy artifacts, keep lockfiles
 # ==========================================================
 
-# === Core dependencies ===
+# === Package managers (keep lockfiles committed!) ===
 node_modules/
 .pnpm-store/
 .pnp/
@@ -19,10 +19,15 @@ node_modules/
 out/
 build/
 dist/
-.vercel/
 .cache/
+.next/cache/
 *.tsbuildinfo
 next-env.d.ts
+.vercel/            # do NOT commit Vercel link tokens
+
+# === Turborepo / swc / tailwind caches (if present) ===
+.turbo/
+.swc/
 
 # === Coverage & testing ===
 coverage/
@@ -32,19 +37,20 @@ cypress/videos/
 cypress/screenshots/
 
 # === Logs & debugging ===
+*.log
+*.pid
+*.seed
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 firebase-debug.log
-*.log
-*.pid
-*.seed
 
-# === Environment & secrets (critical section) ===
-# Absolutely never commit these.
+# === Environment & secrets (critical) ===
+# Never commit secrets; provide a redacted .env.example instead.
 .env
 .env.*
+!.env.example
 .env.local
 .env.development
 .env.production
@@ -55,74 +61,64 @@ firebase-debug.log
 *.crt
 *.p12
 *.cer
+# Token/config files that often contain creds
+.npmrc
+.netrc
+*.keystore
+*.jks
 
-# === OS / Editor junk ===
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/*
-!.vscode/extensions.json  # optional keep if sharing recs
-*.swp
-*.swo
-*.bak
-*.tmp
-*~
+# direnv / shell env helpers
+.envrc
+.direnv/
 
-# === Firebase & Google configs ===
+# === Firebase & Google configs (admin keys etc.) ===
 .firebaserc
 .firebase/
-firebase-debug.log
 serviceAccountKey.json
 google-services.json
 GoogleService-Info.plist
 
-# === Sentry / Analytics / Tooling ===
+# === Sentry / analytics tooling ===
 .sentryclirc
 .sentry-build-plugin
-.env.sentry-build-plugin
 
-# === Misc build caches ===
+# === Linters/formatters caches ===
 .eslintcache
 .stylelintcache
 .prettier-cache
-*.lock
 
-# === OS-generated & archives ===
+# === OS / Editor ===
+.DS_Store
+.DS_Store?
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json   # optionally share extension recs
+*.swp
+*.swo
+
+# === Archives & misc ===
 *.zip
 *.tar.gz
 *.tgz
 *.rar
 
-# === Local tools & data ===
-/tmp
-/data
-/secrets
-/private
-/local
-/backups
+# === Local scratch ===
+/tmp/
+ /data/
+ /secrets/
+ /private/
+ /local/
+ /backups/
 notes.txt
+
+# === Merge/patch leftovers ===
+*.orig
+*.rej
 
 # ==========================================================
 # Notes:
-# - .env* covers both .env and .env.local to protect API keys.
-# - Firebase admin key (.pem, .json) is blacklisted.
-# - .vercel/ ignored so project link tokens aren’t exposed.
-# - .vscode settings excluded except for recommended extension hints.
+# - Keep package-lock.json committed for deterministic builds.
+# - Restrict public API keys at the provider (HTTP referrer/domain).
+# - Store real secrets ONLY in Vercel env vars (Project → Settings → Env).
 # ==========================================================
-.vercel
-# Secrets
-.env
-.env.local
-.env*.backup
-# Builds
-.next
-# Misc
-node_modules
-# Secrets
-.env
-.env.local
-.env*.backup
-# Builds
-.next
-# Misc
-node_modules

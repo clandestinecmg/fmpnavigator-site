@@ -1,0 +1,494 @@
+[
+  {
+    "id": "ph_cavite_divine_grace_medical_center",
+    "name": "Divine Grace Medical Center (DGMC)",
+    "country": "PH",
+    "city": "General Trias, Cavite",
+    "regionTag": "Cavite",
+    "phone": "+63464860100",
+    "policy": "Confirmed by the VA Manila VISN21 as a current direct-billing provider. Contact the respective HMO department to confirm prior to appointments as they are subject to change.",
+    "lat": 14.3979254,
+    "lng": 120.86816479999999,
+    "gmaps": {
+      "searchQuery": "Divine Grace Medical Center, General Trias, Cavite",
+      "url": "https://maps.google.com/?cid=9217993913769481282&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=14.386%2C120.881",
+      "placeId": "ChIJC3wjk5QsljMRQlTxI6Dk7H8",
+      "formattedName": "Divine Grace Medical Center",
+      "formattedAddress": "Antero Soriano Hwy, General Trias, Cavite, Philippines",
+      "internationalPhone": "+63 46 482 6888",
+      "location": {
+        "lat": 14.3979254,
+        "lng": 120.86816479999999
+      }
+    }
+  },
+  {
+    "id": "ph_mandaluyong_manila_hearing_aid",
+    "name": "Manila Hearing Aid",
+    "country": "PH",
+    "city": "Ortigas Center, Mandaluyong City",
+    "regionTag": "Metro Manila",
+    "phone": "+63286369393",
+    "policy": "Confirmed by the VA Manila VISN21 as a current direct-billing provider. Contact the respective HMO department to confirm prior to appointments as they are subject to change.",
+    "lat": 14.586167899999998,
+    "lng": 121.0586091,
+    "gmaps": {
+      "searchQuery": "Manila Hearing Aid, Ortigas Center, Mandaluyong",
+      "url": "https://maps.google.com/?cid=15886035028482764490&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=14.583%2C121.056",
+      "placeId": "ChIJEZ4yMBbIlzMRyq4gyrCIdtw",
+      "formattedName": "Manila Hearing Aid Center, Inc. - Main Office",
+      "formattedAddress": "Unit 809 BSA Twin Tower Bank Drive, Brgy. Wack-Wack Greenhill East, Doña Julia Vargas Ave, Ortigas Center, Mandaluyong City, Metro Manila, Philippines",
+      "internationalPhone": "+63 2 8696 1639",
+      "location": {
+        "lat": 14.586167899999998,
+        "lng": 121.0586091
+      }
+    }
+  },
+  {
+    "id": "ph_manila_medical_center_manila",
+    "name": "Medical Center Manila (ManilaMed)",
+    "country": "PH",
+    "city": "Paco, Manila",
+    "regionTag": "Metro Manila",
+    "phone": "+63285238131",
+    "policy": "Confirmed by the VA Manila VISN21 as a current direct-billing provider. Contact the respective HMO department to confirm prior to appointments as they are subject to change.",
+    "lat": 14.5825352,
+    "lng": 120.9856015,
+    "gmaps": {
+      "searchQuery": "ManilaMed Medical Center Manila, Paco",
+      "url": "https://maps.google.com/?cid=18392364487133768748&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=14.5995%2C120.9842",
+      "placeId": "ChIJs8KnECfKlzMRLCwe2w3OPv8",
+      "formattedName": "ManilaMed",
+      "formattedAddress": "850 United Nations Ave, Paco, Manila, Metro Manila, Philippines",
+      "internationalPhone": "+63 2 8523 8131",
+      "location": {
+        "lat": 14.5825352,
+        "lng": 120.9856015
+      }
+    }
+  },
+  {
+    "id": "ph_pampanga_sacred_heart_medical_center",
+    "name": "Sacred Heart Medical Center (SHMC)",
+    "country": "PH",
+    "city": "Angeles City, Pampanga",
+    "regionTag": "Pampanga",
+    "phone": "+63458884444",
+    "policy": "Confirmed by the VA Manila VISN21 as a current direct-billing provider. Contact the respective HMO department to confirm prior to appointments as they are subject to change.",
+    "lat": 15.1253971,
+    "lng": 120.59844729999999,
+    "gmaps": {
+      "searchQuery": "Sacred Heart Medical Center, Angeles City, Pampanga",
+      "url": "https://maps.google.com/?cid=3300713429489503005&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=15.147%2C120.586",
+      "placeId": "ChIJNd5kPzXyljMRHUsVTmB9zi0",
+      "formattedName": "Sacred Heart Medical Center",
+      "formattedAddress": "4HGX+594, R-9, Angeles, 2009 Pampanga, Philippines",
+      "internationalPhone": "+63 45 624 5606",
+      "location": {
+        "lat": 15.1253971,
+        "lng": 120.59844729999999
+      }
+    }
+  },
+  {
+    "id": "ph_cavite_tanza_specialists_medical_center",
+    "name": "Tanza Specialists Medical Center (TSMC)",
+    "country": "PH",
+    "city": "Tanza, Cavite",
+    "regionTag": "Cavite",
+    "phone": "+63465417400",
+    "policy": "Confirmed by the VA Manila VISN21 as a current direct-billing provider. Contact the respective HMO department to confirm prior to appointments as they are subject to change.",
+    "lat": 14.393775599999998,
+    "lng": 120.8533169,
+    "gmaps": {
+      "searchQuery": "Tanza Specialists Medical Center, Tanza, Cavite",
+      "url": "https://maps.google.com/?cid=4615606923803290727&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=14.334%2C120.853",
+      "placeId": "ChIJ2-u1JrQtljMRZ-wg7AruDUA",
+      "formattedName": "Tanza Specialists Medical Center",
+      "formattedAddress": "9VV3+93J, Tanza, Cavite, Philippines",
+      "internationalPhone": "+63 46 484 7777",
+      "location": {
+        "lat": 14.393775599999998,
+        "lng": 120.8533169
+      }
+    }
+  },
+  {
+    "id": "ph_pampanga_medical_city_clark",
+    "name": "The Medical City Clark (TMCC)",
+    "country": "PH",
+    "city": "Angeles City, Pampanga",
+    "regionTag": "Pampanga",
+    "phone": "+63458683188",
+    "policy": "Confirmed by the VA Manila VISN21 as a current direct-billing provider. Contact the respective HMO department to confirm prior to appointments as they are subject to change.",
+    "caution": "No mental health provider coverage under direct-billing. Consult privately or through VA reimbursement routes.",
+    "lat": 15.178220099999999,
+    "lng": 120.5721682,
+    "gmaps": {
+      "searchQuery": "The Medical City Clark, Angeles City",
+      "url": "https://maps.google.com/?cid=8677035186475013716&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=15.147%2C120.586",
+      "placeId": "ChIJcdLEXHjtljMRVJZoeYcFa3g",
+      "formattedName": "The Medical City Clark",
+      "formattedAddress": "100 Gatwick Gateway, Zone, Clark Freeport, Angeles, 2023 Pampanga, Philippines",
+      "internationalPhone": "+63 45 598 4000",
+      "location": {
+        "lat": 15.178220099999999,
+        "lng": 120.5721682
+      }
+    }
+  },
+  {
+    "id": "ph_iloilo_medical_city_iloilo",
+    "name": "The Medical City Iloilo (TMCI)",
+    "country": "PH",
+    "city": "Molo, Iloilo City, Iloilo",
+    "regionTag": "Iloilo",
+    "phone": "+63333237000",
+    "policy": "Confirmed by the VA Manila VISN21 as a current direct-billing provider. Contact the respective HMO department to confirm prior to appointments as they are subject to change.",
+    "lat": 10.6995497,
+    "lng": 122.54277139999999,
+    "gmaps": {
+      "searchQuery": "The Medical City Iloilo, Molo, Iloilo City",
+      "url": "https://maps.google.com/?cid=144250898670931856&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=10.72%2C122.562",
+      "placeId": "ChIJ89Od_03lrjMRkM_PlW17AAI",
+      "formattedName": "The Medical City Iloilo",
+      "formattedAddress": "Locsin St, Molo, Iloilo City, 5000 Iloilo, Philippines",
+      "internationalPhone": "+63 3397340",
+      "location": {
+        "lat": 10.6995497,
+        "lng": 122.54277139999999
+      }
+    }
+  },
+  {
+    "id": "th_bkk_bangkok_hospital_bangkok",
+    "name": "Bangkok Hospital Bangkok",
+    "country": "TH",
+    "city": "Bangkok",
+    "regionTag": "Bangkok",
+    "policy": "10,000 THB Minimum",
+    "lat": 13.7487558,
+    "lng": 100.58321889999999,
+    "gmaps": {
+      "searchQuery": "Bangkok Hospital Bangkok",
+      "url": "https://maps.google.com/?cid=882047645931659831&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=13.7563%2C100.5018",
+      "placeId": "ChIJi--JeVue4jARN-K5IqmpPQw",
+      "formattedName": "Bangkok Hospital",
+      "formattedAddress": "2 Soi Phetchaburi 47 Yaek 10, Khwaeng Bang Kapi, Khet Huai Khwang, Krung Thep Maha Nakhon 10310, Thailand",
+      "internationalPhone": "+66 2 310 3000",
+      "location": {
+        "lat": 13.7487558,
+        "lng": 100.58321889999999
+      }
+    }
+  },
+  {
+    "id": "th_pattaya_bangkok_hospital_pattaya",
+    "name": "Bangkok Hospital Pattaya",
+    "country": "TH",
+    "city": "Pattaya",
+    "regionTag": "Pattaya",
+    "policy": "Investigating; avoid",
+    "caution": "Currently forcing veterans to sign FDA-waivers that compromise your FMP treatment plan. Avoid until further notice.",
+    "lat": 12.9538236,
+    "lng": 100.9055511,
+    "gmaps": {
+      "searchQuery": "Bangkok Hospital Pattaya",
+      "url": "https://maps.google.com/?cid=9341703782748617382&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=12.9236%2C100.8825",
+      "placeId": "ChIJLRQ3KxW-AjERpnqnjxhmpIE",
+      "formattedName": "Bangkok Hospital Pattaya",
+      "formattedAddress": "301, Sukhumvit Rd, Muang Pattaya, Amphoe Bang Lamung, Chang Wat Chon Buri 20150, Thailand",
+      "internationalPhone": "+66 38 259 999",
+      "location": {
+        "lat": 12.9538236,
+        "lng": 100.9055511
+      }
+    }
+  },
+  {
+    "id": "th_cnx_bangkok_hospital_chiang_mai",
+    "name": "Bangkok Hospital Chiang Mai",
+    "country": "TH",
+    "city": "Chiang Mai",
+    "regionTag": "Chiang Mai",
+    "policy": "5,000 THB Minimum",
+    "lat": 18.7887429,
+    "lng": 99.02624700000001,
+    "gmaps": {
+      "searchQuery": "Bangkok Hospital Chiang Mai",
+      "url": "https://maps.google.com/?cid=4322556769177292716&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=18.7883%2C98.9853",
+      "placeId": "ChIJ5wo451ol2jARrM9FzHrO_Ds",
+      "formattedName": "Bangkok Hospital Chiang Mai",
+      "formattedAddress": "88/8-9 Lampang - Chiang Mai Superhighway, Tambon Nong Pa Khrang, Amphoe Mueang Chiang Mai, Chang Wat Chiang Mai 50000, Thailand",
+      "internationalPhone": "+66 52 089 888",
+      "location": {
+        "lat": 18.7887429,
+        "lng": 99.02624700000001
+      }
+    }
+  },
+  {
+    "id": "th_udon_bangkok_hospital_udon_thani",
+    "name": "Bangkok Hospital Udon Thani",
+    "country": "TH",
+    "city": "Udon Thani",
+    "regionTag": "Udon Thani",
+    "policy": "10,000 THB Minimum · 200,000 THB Max Cap",
+    "lat": 17.4063393,
+    "lng": 102.8036403,
+    "gmaps": {
+      "searchQuery": "Bangkok Hospital Udon Thani",
+      "url": "https://maps.google.com/?cid=4455493978634680786&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=17.4138%2C102.7877",
+      "placeId": "ChIJ-_xCMX2dIzER0nlp1yoY1T0",
+      "formattedName": "Bangkok Hospital Udon",
+      "formattedAddress": "111 Thongyai Rd, Tambon Mak Khaeng, Amphoe Mueang Udon Thani, Chang Wat Udon Thani 41000, Thailand",
+      "internationalPhone": "+66 42 188 999",
+      "location": {
+        "lat": 17.4063393,
+        "lng": 102.8036403
+      }
+    }
+  },
+  {
+    "id": "th_hua_hin_bangkok_hospital_hua_hin",
+    "name": "Bangkok Hospital Hua Hin",
+    "country": "TH",
+    "city": "Hua Hin",
+    "regionTag": "Hua Hin",
+    "policy": "Inpatient Only",
+    "lat": 12.5541702,
+    "lng": 99.9609052,
+    "gmaps": {
+      "searchQuery": "Bangkok Hospital Hua Hin",
+      "url": "https://maps.google.com/?cid=4750719295367878723&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=12.5684%2C99.9577",
+      "placeId": "ChIJw6J6B22s_TARQxj_Wwfy7UE",
+      "formattedName": "Bangkok Hospital Hua Hin",
+      "formattedAddress": "888 Phet Kasem Rd, Tambon Hua Hin, Amphoe Hua Hin, Chang Wat Prachuap Khiri Khan 77110, Thailand",
+      "internationalPhone": "+66 32 616 800",
+      "location": {
+        "lat": 12.5541702,
+        "lng": 99.9609052
+      }
+    }
+  },
+  {
+    "id": "th_chiang_rai_bangkok_hospital_chiang_rai",
+    "name": "Bangkok Hospital Chiang Rai",
+    "country": "TH",
+    "city": "Chiang Rai",
+    "regionTag": "Chiang Rai",
+    "policy": "10,000 THB Minimum",
+    "lat": 19.9925996,
+    "lng": 99.8638525,
+    "gmaps": {
+      "searchQuery": "Bangkok Hospital Chiang Rai",
+      "url": "https://maps.google.com/?cid=4697150314386126824&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=19.9105%2C99.8406",
+      "placeId": "ChIJW4jUDhgG1zAR6HeZCVOhL0E",
+      "formattedName": "Bangkok Hospital Chiangrai",
+      "formattedAddress": "369 หมู่ที่ 13 Phahon Yothin Road, Tambon Nang Lae, Amphoe Mueang Chiang Rai, Chang Wat Chiang Rai 57100, Thailand",
+      "internationalPhone": "+66 52 051 800",
+      "location": {
+        "lat": 19.9925996,
+        "lng": 99.8638525
+      }
+    }
+  },
+  {
+    "id": "th_pak_chong_bangkok_hospital_pak_chong",
+    "name": "Bangkok Hospital Pak Chong",
+    "country": "TH",
+    "city": "Pak Chong",
+    "regionTag": "Nakhon Ratchasima",
+    "policy": "5,000 THB Minimum",
+    "lat": 14.718257999999999,
+    "lng": 101.43165499999999,
+    "gmaps": {
+      "searchQuery": "Bangkok Hospital Pak Chong",
+      "url": "https://maps.google.com/?cid=7783769007661001036&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=14.7088%2C101.4160",
+      "placeId": "ChIJkfLFLScqHDERTClUG6yABWw",
+      "formattedName": "Bangkok Hospital Pakchong",
+      "formattedAddress": "5/1 Thanon Mittraphap, ตำบลหนองส่าหร่าย Amphoe Pak Chong, Chang Wat Nakhon Ratchasima 30130, Thailand",
+      "internationalPhone": "+66 44 088 960",
+      "location": {
+        "lat": 14.718257999999999,
+        "lng": 101.43165499999999
+      }
+    }
+  },
+  {
+    "id": "th_cnx_chiangmai_ram",
+    "name": "Chiangmai Ram Hospital",
+    "country": "TH",
+    "city": "Chiang Mai",
+    "regionTag": "Chiang Mai",
+    "policy": "10,000 THB Minimum",
+    "lat": 18.7947974,
+    "lng": 98.97798329999999,
+    "gmaps": {
+      "searchQuery": "Chiangmai Ram Hospital",
+      "url": "https://maps.google.com/?cid=15616349174002560560&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=18.7883%2C98.9853",
+      "placeId": "ChIJ0dZPVeUv2jARMC7jtNVquNg",
+      "formattedName": "Chiangmai Ram Hospital",
+      "formattedAddress": "ตําบล ศรีภูมิ 8 Thanon Bunrueang Rit, Tambon Su Thep, Amphoe Mueang Chiang Mai, Chang Wat Chiang Mai 50200, Thailand",
+      "internationalPhone": "+66 52 004 699",
+      "location": {
+        "lat": 18.7947974,
+        "lng": 98.97798329999999
+      }
+    }
+  },
+  {
+    "id": "th_bkk_samitivej_bangkok",
+    "name": "Samitivej Sukhumvit Hospital",
+    "country": "TH",
+    "city": "Bangkok",
+    "regionTag": "Bangkok",
+    "policy": "No Limits or Caps",
+    "lat": 13.734872699999999,
+    "lng": 100.57658049999999,
+    "gmaps": {
+      "searchQuery": "Samitivej Sukhumvit Hospital",
+      "url": "https://maps.google.com/?cid=12246685070782647157&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=13.7563%2C100.5018",
+      "placeId": "ChIJVaLgEVWe4jARdUsUqC_39Kk",
+      "formattedName": "Samitivej Sukhumvit Hospital",
+      "formattedAddress": "133 Sukhumvit 49, Khwaeng Khlong Tan Nuea, Watthana, Krung Thep Maha Nakhon 10110, Thailand",
+      "internationalPhone": "+66 2 022 2222",
+      "location": {
+        "lat": 13.734872699999999,
+        "lng": 100.57658049999999
+      }
+    }
+  },
+  {
+    "id": "th_bkk_samitivej_srinakarin",
+    "name": "Samitivej Srinakarin Hospital",
+    "country": "TH",
+    "city": "Bangkok",
+    "regionTag": "Srinakarin",
+    "policy": "No Limits or Caps",
+    "lat": 13.748628799999999,
+    "lng": 100.63868620000001,
+    "gmaps": {
+      "searchQuery": "Samitivej Srinakarin Hospital",
+      "url": "https://maps.google.com/?cid=17266608792353613742&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=13.7563%2C100.5018",
+      "placeId": "ChIJU9rWFcFhHTERrqff1zZRn-8",
+      "formattedName": "Samitivej Srinakarin Hospital",
+      "formattedAddress": "488 Thanon Srinagarindra, Khwaeng Suan Luang, Khet Suan Luang, Krung Thep Maha Nakhon 10250, Thailand",
+      "internationalPhone": "+66 2 022 2222",
+      "location": {
+        "lat": 13.748628799999999,
+        "lng": 100.63868620000001
+      }
+    }
+  },
+  {
+    "id": "th_sriracha_samitivej_sriracha",
+    "name": "Samitivej Sriracha Hospital",
+    "country": "TH",
+    "city": "Si Racha",
+    "regionTag": "Chonburi",
+    "policy": "No Limits or Caps",
+    "lat": 13.1790413,
+    "lng": 100.92892049999999,
+    "gmaps": {
+      "searchQuery": "Samitivej Sriracha Hospital",
+      "url": "https://maps.google.com/?cid=1786938006927622654&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=13.1737%2C100.9311",
+      "placeId": "ChIJrzT8Mvq2AjER_sGQUqZ6zBg",
+      "formattedName": "Samitivej Sriracha Hospital",
+      "formattedAddress": "8 Soi Lamkaet, Tambon Si Racha, Amphoe Si Racha, Chang Wat Chon Buri 20110, Thailand",
+      "internationalPhone": "+66 38 320 300",
+      "location": {
+        "lat": 13.1790413,
+        "lng": 100.92892049999999
+      }
+    }
+  },
+  {
+    "id": "th_phuket_miracles_asia_rehab",
+    "name": "Miracles Asia Rehabilitation",
+    "country": "TH",
+    "city": "Phuket",
+    "regionTag": "Rehabilitation",
+    "policy": "No Limits or Caps",
+    "lat": 8.083166,
+    "lng": 98.3721415,
+    "gmaps": {
+      "searchQuery": "Miracles Asia Rehabilitation Phuket",
+      "url": "https://maps.google.com/?cid=8635764545496566394&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=7.8804%2C98.3923",
+      "placeId": "ChIJY8CScQw3UDAReko8khlm2Hc",
+      "formattedName": "Miracles Asia",
+      "formattedAddress": "99/15-18, ป่าคลอก Amphur Thalang, ภูเก็ต 83110, Thailand",
+      "internationalPhone": "+66 2 544 0406",
+      "location": {
+        "lat": 8.083166,
+        "lng": 98.3721415
+      }
+    }
+  },
+  {
+    "id": "th_cnx_ingjai_clinic",
+    "name": "Ingjai Clinic",
+    "country": "TH",
+    "city": "Chiang Mai",
+    "regionTag": "Mental Health",
+    "policy": "No Limits or Caps",
+    "lat": 18.776187,
+    "lng": 99.04215289999999,
+    "gmaps": {
+      "searchQuery": "Ingjai Clinic Chiang Mai",
+      "url": "https://maps.google.com/?cid=726265512094867368&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=18.7883%2C98.9853",
+      "placeId": "ChIJJat9u4kv2jARqB8IpaI2FAo",
+      "formattedName": "Ingjai Mental Health Clinic อิงใจคลินิก​จิตเวช",
+      "formattedAddress": "68/5, Moo 1 Sompoch Chiang Mai, 700 yr road, Tambon Tazala, Mueang, เชียงใหม่ 50000, Thailand",
+      "internationalPhone": "+66 95 565 5268",
+      "location": {
+        "lat": 18.776187,
+        "lng": 99.04215289999999
+      }
+    }
+  },
+  {
+    "id": "th_jomtien_heroes_total_wellness",
+    "name": "Heroes Total Wellness",
+    "country": "TH",
+    "city": "Jomtien",
+    "regionTag": "Chonburi",
+    "policy": "No Limits or Caps",
+    "lat": 12.920873199999999,
+    "lng": 100.8610782,
+    "gmaps": {
+      "searchQuery": "Heroes Total Wellness Jomtien",
+      "url": "https://maps.google.com/?cid=555317675198327190&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=12.8859%2C100.8727",
+      "placeId": "ChIJXV7aBACVAjERlimxv3vitAc",
+      "formattedName": "Heroes Total Wellness",
+      "formattedAddress": "378, Cozy Beach, 25-26 ซอย เกษตรสิน 7 เมืองพัทยา อำเภอบางละมุง ชลบุรี 20150, Thailand",
+      "internationalPhone": "+66 61 215 2290",
+      "location": {
+        "lat": 12.920873199999999,
+        "lng": 100.8610782
+      }
+    }
+  }
+]
