@@ -9,8 +9,8 @@ type ContactBody = {
   email: string;
   subject?: string;
   message: string;
-  token?: string; // reCAPTCHA v3 token OR "dev-bypass" in local dev
-  attachment?: { filename: string; content: string } | null; // data:*/*;base64,...
+  token?: string;
+  attachment?: { filename: string; content: string } | null;
 };
 
 function jsonError(
@@ -24,6 +24,7 @@ function jsonError(
     { status },
   );
 }
+
 function reqEnv(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`[contact] Missing env: ${name}`);
@@ -59,34 +60,46 @@ function parseDataUrlMeta(dataUrl: string) {
   return { mime, isBase64 };
 }
 
+// ---- NEW: allowlisted origins/referers ----
+const ALLOWED_ORIGINS = new Set<string>([
+  "https://fmpnavigator.org",
+  "http://localhost:3000",
+]);
+
+function isAllowedSource(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  const referer = req.headers.get("referer");
+  if (origin && ALLOWED_ORIGINS.has(origin)) return true;
+  if (referer) {
+    try {
+      const u = new URL(referer);
+      const base = `${u.protocol}//${u.host}`;
+      if (ALLOWED_ORIGINS.has(base)) return true;
+    } catch {
+      /* ignore bad referer */
+    }
+  }
+  // Allow internal server-to-server calls (no origin) as a last resort
+  return !origin && !referer;
+}
+
 export async function POST(req: NextRequest) {
+  if (!isAllowedSource(req)) {
+    return jsonError(403, "FORBIDDEN_ORIGIN", "Origin not allowed.");
+  }
+
   const requestId =
     req.headers.get("x-vercel-id") || Math.random().toString(36).slice(2, 10);
 
   // Env
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || "";
   const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_RECAPTCHA_BYPASS === "1";
-  const EMAILJS_SERVICE_ID = reqEnv("EMAILJS_SERVICE_ID");
-  const EMAILJS_TEMPLATE_ID = reqEnv("EMAILJS_TEMPLATE_ID");
-  const EMAILJS_PUBLIC_KEY = reqEnv("EMAILJS_PUBLIC_KEY");
+  const EMAILJS_SERVICE_ID = reqEnv("NEXT_PUBLIC_EMAILJS_SERVICE_ID");
+  const EMAILJS_TEMPLATE_ID = reqEnv("NEXT_PUBLIC_EMAILJS_TEMPLATE_ID");
+  const EMAILJS_PUBLIC_KEY = reqEnv("NEXT_PUBLIC_EMAILJS_PUBLIC_KEY");
   const EMAILJS_PRIVATE_KEY = reqEnv("EMAILJS_PRIVATE_KEY");
   const EMAILJS_AUTOREPLY_TEMPLATE_ID =
     process.env.EMAILJS_AUTOREPLY_TEMPLATE_ID || "";
-
-  // Guard: Ensure required environment variables exist
-  const requiredEnvs = {
-    RECAPTCHA_SECRET,
-    EMAILJS_SERVICE_ID,
-    EMAILJS_TEMPLATE_ID,
-    EMAILJS_PUBLIC_KEY,
-    EMAILJS_PRIVATE_KEY,
-  };
-  for (const [key, value] of Object.entries(requiredEnvs)) {
-    if (!value || value === "") {
-      console.error("[contact][env][missing]", key);
-      return jsonError(500, "SERVER_MISCONFIG", `Missing required environment variable: ${key}`);
-    }
-  }
 
   // Body
   let body: ContactBody;
@@ -147,7 +160,7 @@ export async function POST(req: NextRequest) {
       ? referer
       : `${originUrl.origin}/contact`;
 
-  // reCAPTCHA (skip only for localhost + dev-bypass OR explicit 'dev-bypass' token)
+  // reCAPTCHA
   const shouldBypass =
     (DEV_BYPASS && isLocalHost(originUrl)) || token === "dev-bypass";
   if (!shouldBypass) {
@@ -198,7 +211,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // IMPORTANT: Match your EmailJS template variables
+  // EmailJS template parameters
   const template_params: Record<string, string> = {
     from_name: name,
     from_email: email,
@@ -211,7 +224,7 @@ export async function POST(req: NextRequest) {
     submitted_at: new Date().toISOString(),
   };
 
-  // Base payload per EmailJS REST
+  // Base payload
   const basePayload: Record<string, any> = {
     service_id: EMAILJS_SERVICE_ID,
     template_id: EMAILJS_TEMPLATE_ID,
@@ -227,8 +240,10 @@ export async function POST(req: NextRequest) {
     basePayload.attachments = [{ name: attachment.filename, data: base64 }];
   }
 
-  // Send to EmailJS
-  let emailResp: Response;
+  // First try: private-key (Bearer) mode
+  let emailResp: Response | null = null;
+  let emailRespText = "";
+
   try {
     emailResp = await fetchWithTimeout(
       "https://api.emailjs.com/api/v1.0/email/send",
@@ -236,41 +251,64 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${EMAILJS_PRIVATE_KEY}`, // note: no pk_ prefix in your key
+          Authorization: `Bearer ${EMAILJS_PRIVATE_KEY}`,
         },
         body: JSON.stringify(basePayload),
         timeout: 15_000,
       },
     );
+    emailRespText = await emailResp.text();
   } catch (e: any) {
-    console.error("[contact][emailjs][network]", { requestId, err: String(e) });
+    console.error("[contact][emailjs][network-1]", { requestId, err: String(e) });
     return jsonError(502, "EMAILJS_UNREACHABLE", "Email service unreachable.");
   }
 
+  // Fallback: if unauthorized/forbidden, try public-key mode (no Authorization header)
+  if (!emailResp.ok && (emailResp.status === 401 || emailResp.status === 403)) {
+    try {
+      emailResp = await fetchWithTimeout(
+        "https://api.emailjs.com/api/v1.0/email/send",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(basePayload),
+          timeout: 15_000,
+        },
+      );
+      emailRespText = await emailResp.text();
+    } catch (e: any) {
+      console.error("[contact][emailjs][network-2]", { requestId, err: String(e) });
+      return jsonError(502, "EMAILJS_UNREACHABLE", "Email service unreachable.");
+    }
+  }
+
   if (!emailResp.ok) {
-    const text = await emailResp.text();
     console.error("[contact][emailjs][bad_status]", {
       requestId,
       status: emailResp.status,
-      body: text,
+      body: emailRespText.slice(0, 500),
       diagnostics: {
-        have_public_key: !!EMAILJS_PUBLIC_KEY,
-        public_key_len: EMAILJS_PUBLIC_KEY.length,
-        included_private_key_header: true,
+        have_public_key: !!process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY,
+        have_private_key: !!process.env.EMAILJS_PRIVATE_KEY,
         included_recaptcha: !!basePayload["g-recaptcha-response"],
         service_id: EMAILJS_SERVICE_ID,
         template_id: EMAILJS_TEMPLATE_ID,
       },
     });
     const code =
-      emailResp.status === 401 ? "EMAILJS_UNAUTHORIZED" : "EMAILJS_ERROR";
+      emailResp.status === 401
+        ? "EMAILJS_UNAUTHORIZED"
+        : emailResp.status === 403
+        ? "EMAILJS_FORBIDDEN"
+        : "EMAILJS_ERROR";
+
+    // return small, safe diagnostics to client
     return jsonError(502, code, "Email service returned an error.", {
       status: emailResp.status,
-      body: text.slice(0, 500),
     });
   }
 
-  // Optional: trigger auto-reply from server (only if you want API-side, not EmailJS “linked”)
+  // Optional: server-driven auto-reply (if configured)
   if (EMAILJS_AUTOREPLY_TEMPLATE_ID) {
     try {
       await fetchWithTimeout("https://api.emailjs.com/api/v1.0/email/send", {
@@ -289,7 +327,7 @@ export async function POST(req: NextRequest) {
         timeout: 12_000,
       });
     } catch {
-      // non-fatal
+      /* non-fatal */
     }
   }
 
