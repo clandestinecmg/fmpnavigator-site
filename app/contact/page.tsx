@@ -73,7 +73,9 @@ export default function ContactPage() {
 
   const disabled = useMemo(() => state.status === "submitting", [state.status]);
 
-  function triggerFilePicker() { fileInputRef.current?.click(); }
+  function triggerFilePicker() {
+    fileInputRef.current?.click();
+  }
 
   async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.currentTarget.files?.[0];
@@ -138,12 +140,13 @@ export default function ContactPage() {
 
   return (
     <section className="container py-12">
+      {/* Intro card */}
       <div className="mb-8">
         <div className="card flex flex-col justify-center p-8">
           <h1 className="h1 mb-3">Contact FMP Navigator</h1>
           <p className="muted text-lg">
-            Questions about the VA Foreign Medical Program or our provider
-            lists? Send us a note and we’ll get back to you asap.
+            Questions about the VA Foreign Medical Program or our provider lists?
+            Send us a note and we’ll get back to you asap.
           </p>
           <ul className="mt-4 small space-y-1">
             <li>• Secure form with reCAPTCHA v3{DEV_BYPASS ? " (dev bypass active)" : ""}</li>
@@ -152,7 +155,7 @@ export default function ContactPage() {
         </div>
       </div>
 
-      {/* Form */}
+      {/* Form (no placeholders below) */}
       <form onSubmit={onSubmit} className="max-w-2xl space-y-5 card">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -218,11 +221,11 @@ export default function ContactPage() {
 
         <p className="small muted">
           This site is protected by reCAPTCHA and the Google{" "}
-          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+          <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
             Privacy Policy
           </a>{" "}
           and{" "}
-          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+          <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">
             Terms of Service
           </a>{" "}
           apply.
