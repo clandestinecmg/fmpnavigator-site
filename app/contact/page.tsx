@@ -1,4 +1,3 @@
-// app/contact/page.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -139,8 +138,7 @@ export default function ContactPage() {
 
   return (
     <section className="container py-12">
-      {/* Hero / header */}
-      <div className="mb-8 grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-8 items-stretch">
+      <div className="mb-8">
         <div className="card flex flex-col justify-center p-8">
           <h1 className="h1 mb-3">Contact FMP Navigator</h1>
           <p className="muted text-lg">
@@ -151,13 +149,6 @@ export default function ContactPage() {
             <li>• Secure form with reCAPTCHA v3{DEV_BYPASS ? " (dev bypass active)" : ""}</li>
             <li>• Optional attachment (≤ 5 MB)</li>
           </ul>
-        </div>
-
-        <div className="card p-0 overflow-hidden">
-          <div aria-hidden className="h-full w-full" style={{
-            background: "linear-gradient(135deg, rgba(2,132,199,0.12), rgba(15,23,42,0.08))",
-            minHeight: 220,
-          }} />
         </div>
       </div>
 
