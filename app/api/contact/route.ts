@@ -24,6 +24,7 @@ function jsonError(
     { status },
   );
 }
+
 function reqEnv(name: string): string {
   const v = process.env[name];
   if (!v) throw new Error(`[contact] Missing env: ${name}`);
@@ -63,9 +64,10 @@ export async function POST(req: NextRequest) {
   const requestId =
     req.headers.get("x-vercel-id") || Math.random().toString(36).slice(2, 10);
 
-  // Env
+  // ===== Env: server-only (no NEXT_PUBLIC fallbacks) =====
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || "";
   const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_RECAPTCHA_BYPASS === "1";
+
   const EMAILJS_SERVICE_ID = reqEnv("EMAILJS_SERVICE_ID");
   const EMAILJS_TEMPLATE_ID = reqEnv("EMAILJS_TEMPLATE_ID");
   const EMAILJS_PUBLIC_KEY = reqEnv("EMAILJS_PUBLIC_KEY");
@@ -73,22 +75,7 @@ export async function POST(req: NextRequest) {
   const EMAILJS_AUTOREPLY_TEMPLATE_ID =
     process.env.EMAILJS_AUTOREPLY_TEMPLATE_ID || "";
 
-  // Guard: Ensure required environment variables exist
-  const requiredEnvs = {
-    RECAPTCHA_SECRET,
-    EMAILJS_SERVICE_ID,
-    EMAILJS_TEMPLATE_ID,
-    EMAILJS_PUBLIC_KEY,
-    EMAILJS_PRIVATE_KEY,
-  };
-  for (const [key, value] of Object.entries(requiredEnvs)) {
-    if (!value || value === "") {
-      console.error("[contact][env][missing]", key);
-      return jsonError(500, "SERVER_MISCONFIG", `Missing required environment variable: ${key}`);
-    }
-  }
-
-  // Body
+  // ===== Body validation =====
   let body: ContactBody;
   try {
     body = (await req.json()) as ContactBody;
@@ -112,7 +99,7 @@ export async function POST(req: NextRequest) {
   if (!message || message.length < 10)
     return jsonError(400, "BAD_MESSAGE", "Please include a longer message.");
 
-  // Attachment ≤ 5MB
+  // Attachment ≤ 5MB (base64 length accounting)
   if (attachment) {
     if (!attachment.filename || !attachment.content?.startsWith("data:")) {
       return jsonError(
@@ -198,7 +185,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // IMPORTANT: Match your EmailJS template variables
+  // EmailJS payload (server REST)
   const template_params: Record<string, string> = {
     from_name: name,
     from_email: email,
@@ -211,14 +198,14 @@ export async function POST(req: NextRequest) {
     submitted_at: new Date().toISOString(),
   };
 
-  // Base payload per EmailJS REST
   const basePayload: Record<string, any> = {
     service_id: EMAILJS_SERVICE_ID,
     template_id: EMAILJS_TEMPLATE_ID,
     template_params,
-    public_key: EMAILJS_PUBLIC_KEY,
-    user_id: EMAILJS_PUBLIC_KEY,
+    public_key: EMAILJS_PUBLIC_KEY, // EmailJS expects this even for REST usage
+    user_id: EMAILJS_PUBLIC_KEY,    // kept for compatibility
   };
+
   if (token && token !== "dev-bypass") {
     basePayload["g-recaptcha-response"] = token;
   }
@@ -227,7 +214,7 @@ export async function POST(req: NextRequest) {
     basePayload.attachments = [{ name: attachment.filename, data: base64 }];
   }
 
-  // Send to EmailJS
+  // Send via EmailJS REST
   let emailResp: Response;
   try {
     emailResp = await fetchWithTimeout(
@@ -236,7 +223,7 @@ export async function POST(req: NextRequest) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${EMAILJS_PRIVATE_KEY}`, // note: no pk_ prefix in your key
+          Authorization: `Bearer ${EMAILJS_PRIVATE_KEY}`,
         },
         body: JSON.stringify(basePayload),
         timeout: 15_000,
@@ -270,7 +257,7 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Optional: trigger auto-reply from server (only if you want API-side, not EmailJS “linked”)
+  // Optional: server-side autoresponder
   if (EMAILJS_AUTOREPLY_TEMPLATE_ID) {
     try {
       await fetchWithTimeout("https://api.emailjs.com/api/v1.0/email/send", {

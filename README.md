@@ -39,7 +39,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 This doc explains how we enrich `data/providers.json` with **Google Places** identity (place IDs, canonical names/addresses, official website/phone and authoritative coordinates), and then merge the results into a final file used by the website.
 
----
+----
 
 ## Overview
 
