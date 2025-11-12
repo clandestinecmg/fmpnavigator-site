@@ -202,8 +202,7 @@ export async function POST(req: NextRequest) {
     service_id: EMAILJS_SERVICE_ID,
     template_id: EMAILJS_TEMPLATE_ID,
     template_params,
-    public_key: EMAILJS_PUBLIC_KEY, // EmailJS expects this even for REST usage
-    user_id: EMAILJS_PUBLIC_KEY,    // kept for compatibility
+    user_id: EMAILJS_PUBLIC_KEY, // EmailJS public key (aka user_id)
   };
 
   if (token && token !== "dev-bypass") {
@@ -214,9 +213,11 @@ export async function POST(req: NextRequest) {
     basePayload.attachments = [{ name: attachment.filename, data: base64 }];
   }
 
-  // Send via EmailJS REST
+  // Send via EmailJS REST (try with Bearer first, then fallback to public key mode)
   let emailResp: Response;
+  let diagnosticsMode = "bearer";
   try {
+    // Mode A: Bearer (private key)
     emailResp = await fetchWithTimeout(
       "https://api.emailjs.com/api/v1.0/email/send",
       {
@@ -229,6 +230,28 @@ export async function POST(req: NextRequest) {
         timeout: 15_000,
       },
     );
+
+    // Fallback to public-key mode if EmailJS returns a 400 with "parameters are invalid"
+    if (emailResp.status === 400) {
+      const peek = await emailResp.text().catch(() => "");
+      if (/parameters are invalid/i.test(peek)) {
+        diagnosticsMode = "public_key";
+        emailResp = await fetchWithTimeout(
+          "https://api.emailjs.com/api/v1.0/email/send",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(basePayload), // user_id is included
+            timeout: 15_000,
+          },
+        );
+      } else {
+        // re-create a Response-like object to pass along text later
+        emailResp = new Response(peek, { status: 400 });
+      }
+    }
   } catch (e: any) {
     console.error("[contact][emailjs][network]", { requestId, err: String(e) });
     return jsonError(502, "EMAILJS_UNREACHABLE", "Email service unreachable.");
@@ -241,10 +264,9 @@ export async function POST(req: NextRequest) {
       status: emailResp.status,
       body: text,
       diagnostics: {
+        mode: diagnosticsMode, // 'bearer' or 'public_key'
         have_public_key: !!EMAILJS_PUBLIC_KEY,
         public_key_len: EMAILJS_PUBLIC_KEY.length,
-        included_private_key_header: true,
-        included_recaptcha: !!basePayload["g-recaptcha-response"],
         service_id: EMAILJS_SERVICE_ID,
         template_id: EMAILJS_TEMPLATE_ID,
       },

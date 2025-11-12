@@ -240,27 +240,6 @@
     }
   },
   {
-    "id": "th_hua_hin_bangkok_hospital_hua_hin",
-    "name": "Bangkok Hospital Hua Hin",
-    "country": "TH",
-    "city": "Hua Hin",
-    "regionTag": "Hua Hin",
-    "policy": "Inpatient Only",
-    "gmaps": {
-      "searchQuery": "Bangkok Hospital Hua Hin",
-      "url": "https://maps.google.com/?cid=4750719295367878723&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=12.5684%2C99.9577",
-      "placeId": "ChIJw6J6B22s_TARQxj_Wwfy7UE",
-      "formattedName": "Bangkok Hospital Hua Hin",
-      "formattedAddress": "888 Phet Kasem Rd, Tambon Hua Hin, Amphoe Hua Hin, Chang Wat Prachuap Khiri Khan 77110, Thailand",
-      "internationalPhone": "+66 32 616 800",
-      "location": {
-        "lat": 12.5541702,
-        "lng": 99.9609052
-      }
-    }
-  },
-  {
     "id": "th_chiang_rai_bangkok_hospital_chiang_rai",
     "name": "Bangkok Hospital Chiang Rai",
     "country": "TH",
