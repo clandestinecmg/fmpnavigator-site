@@ -303,27 +303,6 @@
     }
   },
   {
-    "id": "th_bkk_samitivej_bangkok",
-    "name": "Samitivej Sukhumvit Hospital",
-    "country": "TH",
-    "city": "Bangkok",
-    "regionTag": "Bangkok",
-    "policy": "No Limits or Caps",
-    "gmaps": {
-      "searchQuery": "Samitivej Sukhumvit Hospital",
-      "url": "https://maps.google.com/?cid=12246685070782647157&g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=13.7563%2C100.5018",
-      "placeId": "ChIJVaLgEVWe4jARdUsUqC_39Kk",
-      "formattedName": "Samitivej Sukhumvit Hospital",
-      "formattedAddress": "133 Sukhumvit 49, Khwaeng Khlong Tan Nuea, Watthana, Krung Thep Maha Nakhon 10110, Thailand",
-      "internationalPhone": "+66 2 022 2222",
-      "location": {
-        "lat": 13.734872699999999,
-        "lng": 100.57658049999999
-      }
-    }
-  },
-  {
     "id": "th_bkk_samitivej_srinakarin",
     "name": "Samitivej Srinakarin Hospital",
     "country": "TH",
