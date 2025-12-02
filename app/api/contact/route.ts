@@ -1,5 +1,6 @@
 // app/api/contact/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,9 +51,11 @@ function getClientIp(req: NextRequest): string | undefined {
   if (fwd && fwd.length > 0) return fwd.split(",")[0]!.trim();
   return undefined;
 }
+
 function isLocalHost(url: URL) {
   return url.hostname === "localhost" || url.hostname === "127.0.0.1";
 }
+
 function parseDataUrlMeta(dataUrl: string) {
   const m = /^data:([^;,]+)?(;base64)?,/i.exec(dataUrl);
   const mime = m?.[1]?.toLowerCase() || "application/octet-stream";
@@ -60,20 +63,37 @@ function parseDataUrlMeta(dataUrl: string) {
   return { mime, isBase64 };
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (ch) => {
+    switch (ch) {
+      case "&":
+        return "&amp;";
+      case "<":
+        return "&lt;";
+      case ">":
+        return "&gt;";
+      case '"':
+        return "&quot;";
+      default:
+        return ch;
+    }
+  });
+}
+
 export async function POST(req: NextRequest) {
   const requestId =
     req.headers.get("x-vercel-id") || Math.random().toString(36).slice(2, 10);
 
-  // ===== Env: server-only (no NEXT_PUBLIC fallbacks) =====
+  // ===== Env: server-only =====
   const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || "";
   const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_RECAPTCHA_BYPASS === "1";
 
-  const EMAILJS_SERVICE_ID = reqEnv("EMAILJS_SERVICE_ID");
-  const EMAILJS_TEMPLATE_ID = reqEnv("EMAILJS_TEMPLATE_ID");
-  const EMAILJS_PUBLIC_KEY = reqEnv("EMAILJS_PUBLIC_KEY");
-  const EMAILJS_PRIVATE_KEY = reqEnv("EMAILJS_PRIVATE_KEY");
-  const EMAILJS_AUTOREPLY_TEMPLATE_ID =
-    process.env.EMAILJS_AUTOREPLY_TEMPLATE_ID || "";
+  // SMTP (Zoho or any other provider)
+  const SMTP_HOST = reqEnv("SMTP_HOST"); // e.g. "smtp.zoho.com"
+  const SMTP_PORT = Number(process.env.SMTP_PORT ?? "465"); // "465" (SSL) or "587" (STARTTLS)
+  const SMTP_USER = reqEnv("SMTP_USER"); // e.g. "support@fmpnavigator.org"
+  const SMTP_PASS = reqEnv("SMTP_PASS"); // Zoho app password
+  const CONTACT_TO = reqEnv("CONTACT_TO"); // e.g. "support@fmpnavigator.org"
 
   // ===== Body validation =====
   let body: ContactBody;
@@ -134,9 +154,10 @@ export async function POST(req: NextRequest) {
       ? referer
       : `${originUrl.origin}/contact`;
 
-  // reCAPTCHA (skip only for localhost + dev-bypass OR explicit 'dev-bypass' token)
+  // ===== reCAPTCHA (same behavior as before) =====
   const shouldBypass =
     (DEV_BYPASS && isLocalHost(originUrl)) || token === "dev-bypass";
+
   if (!shouldBypass) {
     if (!RECAPTCHA_SECRET)
       return jsonError(
@@ -151,6 +172,7 @@ export async function POST(req: NextRequest) {
       form.set("secret", RECAPTCHA_SECRET);
       form.set("response", token);
       if (ip) form.set("remoteip", ip);
+
       const resp = await fetchWithTimeout(
         "https://www.google.com/recaptcha/api/siteverify",
         {
@@ -160,6 +182,7 @@ export async function POST(req: NextRequest) {
           timeout: 8000,
         },
       );
+
       const recaptchaJson = await resp.json();
       const success = !!recaptchaJson?.success;
       const score = Number(recaptchaJson?.score ?? 0);
@@ -185,121 +208,188 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // EmailJS payload (server REST)
-  const template_params: Record<string, string> = {
-    from_name: name,
-    from_email: email,
-    subject,
+  // ===== Build email =====
+  const safeName = escapeHtml(name);
+  const safeEmail = escapeHtml(email);
+  const safeSubject = escapeHtml(subject);
+  const safeMessage = escapeHtml(message);
+  const safePageUrl = escapeHtml(page_url);
+
+  const textBody = [
+    `New message via FMPNavigator.org`,
+    ``,
+    `From: ${name} <${email}>`,
+    `Subject: ${subject}`,
+    ``,
     message,
-    page_url,
-    user_agent: ua,
-    ip: ip ?? "",
-    request_id: requestId,
-    submitted_at: new Date().toISOString(),
-  };
+    ``,
+    `Page: ${page_url}`,
+    `IP: ${ip ?? "unknown"}`,
+    `User-Agent: ${ua}`,
+    `Request ID: ${requestId}`,
+    `Submitted at: ${new Date().toISOString()}`,
+  ].join("\n");
 
-  const basePayload: Record<string, any> = {
-    service_id: EMAILJS_SERVICE_ID,
-    template_id: EMAILJS_TEMPLATE_ID,
-    template_params,
-    user_id: EMAILJS_PUBLIC_KEY, // EmailJS public key (aka user_id)
-  };
-
-  if (token && token !== "dev-bypass") {
-    basePayload["g-recaptcha-response"] = token;
-  }
-  if (attachment) {
-    const base64 = attachment.content.split(",")[1] || "";
-    basePayload.attachments = [{ name: attachment.filename, data: base64 }];
-  }
-
-  // Send via EmailJS REST (try with Bearer first, then fallback to public key mode)
-  let emailResp: Response;
-  let diagnosticsMode = "bearer";
-  try {
-    // Mode A: Bearer (private key)
-    emailResp = await fetchWithTimeout(
-      "https://api.emailjs.com/api/v1.0/email/send",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${EMAILJS_PRIVATE_KEY}`,
-        },
-        body: JSON.stringify(basePayload),
-        timeout: 15_000,
-      },
-    );
-
-    // Fallback to public-key mode if EmailJS returns a 400 with "parameters are invalid"
-    if (emailResp.status === 400) {
-      const peek = await emailResp.text().catch(() => "");
-      if (/parameters are invalid/i.test(peek)) {
-        diagnosticsMode = "public_key";
-        emailResp = await fetchWithTimeout(
-          "https://api.emailjs.com/api/v1.0/email/send",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(basePayload), // user_id is included
-            timeout: 15_000,
-          },
-        );
-      } else {
-        // re-create a Response-like object to pass along text later
-        emailResp = new Response(peek, { status: 400 });
+  const htmlBody = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>New website message</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+          "Segoe UI", sans-serif;
+        background-color: #0c1220;
+        color: #e3e8f4;
+        padding: 24px;
+        line-height: 1.6;
       }
-    }
-  } catch (e: any) {
-    console.error("[contact][emailjs][network]", { requestId, err: String(e) });
-    return jsonError(502, "EMAILJS_UNREACHABLE", "Email service unreachable.");
+      .card {
+        background-color: #0f172a;
+        border-radius: 16px;
+        border: 1px solid #1e293b;
+        max-width: 640px;
+        margin: 0 auto;
+        overflow: hidden;
+      }
+      .inner {
+        padding: 20px 24px;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 18px;
+      }
+      p {
+        margin: 0;
+      }
+      .muted {
+        color: #9ca3af;
+        font-size: 13px;
+      }
+      .meta {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 4px;
+      }
+      .hr {
+        border: none;
+        border-top: 1px solid #1f2937;
+        margin: 0;
+      }
+      .label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #9ca3af;
+        margin-bottom: 4px;
+      }
+      .msg {
+        margin-top: 4px;
+        background: #020617;
+        border-radius: 12px;
+        border: 1px solid #1f2937;
+        padding: 12px 14px;
+        white-space: pre-wrap;
+        font-size: 14px;
+        color: #e5e7eb;
+      }
+      a {
+        color: #60a5fa;
+        text-decoration: none;
+      }
+      .footer {
+        padding: 16px 24px;
+        background: #020617;
+        color: #6b7280;
+        font-size: 11px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="inner">
+        <h1>New website message</h1>
+        <p class="muted">
+          from <strong>${safeName}</strong> &lt;${safeEmail}&gt;
+        </p>
+        <p class="meta"><strong>Subject:</strong> ${safeSubject}</p>
+      </div>
+
+      <hr class="hr" />
+
+      <div class="inner">
+        <div class="label">Message</div>
+        <div class="msg">${safeMessage}</div>
+      </div>
+
+      <div class="inner">
+        <p class="meta">
+          Submitted from:
+          <a href="${safePageUrl}">${safePageUrl}</a><br />
+          IP: ${escapeHtml(ip ?? "unknown")}<br />
+          User-Agent: ${escapeHtml(ua)}<br />
+          Request ID: ${escapeHtml(requestId)}
+        </p>
+      </div>
+
+      <div class="footer">
+        © FMP Navigator • fmpnavigator.org
+      </div>
+    </div>
+  </body>
+</html>`;
+
+  // ===== Nodemailer transport (Zoho SMTP) =====
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465, // true = SSL, false = STARTTLS (587)
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASS,
+    },
+  });
+
+  // Attachment mapping
+  const mailAttachments: {
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  }[] = [];
+
+  if (attachment) {
+    const { mime } = parseDataUrlMeta(attachment.content);
+    const base64 = attachment.content.split(",")[1] || "";
+    const buf = Buffer.from(base64, "base64");
+    mailAttachments.push({
+      filename: attachment.filename,
+      content: buf,
+      contentType: mime,
+    });
   }
 
-  if (!emailResp.ok) {
-    const text = await emailResp.text();
-    console.error("[contact][emailjs][bad_status]", {
+  // ===== Send mail =====
+  try {
+    await transporter.sendMail({
+      from: `"FMP Navigator Contact" <${SMTP_USER}>`,
+      to: CONTACT_TO,
+      replyTo: `"${name}" <${email}>`,
+      subject: subject || "New message via FMPNavigator.org",
+      text: textBody,
+      html: htmlBody,
+      attachments: mailAttachments.length ? mailAttachments : undefined,
+    });
+  } catch (err: any) {
+    console.error("[contact][smtp][error]", {
       requestId,
-      status: emailResp.status,
-      body: text,
-      diagnostics: {
-        mode: diagnosticsMode, // 'bearer' or 'public_key'
-        have_public_key: !!EMAILJS_PUBLIC_KEY,
-        public_key_len: EMAILJS_PUBLIC_KEY.length,
-        service_id: EMAILJS_SERVICE_ID,
-        template_id: EMAILJS_TEMPLATE_ID,
-      },
+      err: String(err),
     });
-    const code =
-      emailResp.status === 401 ? "EMAILJS_UNAUTHORIZED" : "EMAILJS_ERROR";
-    return jsonError(502, code, "Email service returned an error.", {
-      status: emailResp.status,
-      body: text.slice(0, 500),
-    });
-  }
-
-  // Optional: server-side autoresponder
-  if (EMAILJS_AUTOREPLY_TEMPLATE_ID) {
-    try {
-      await fetchWithTimeout("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${EMAILJS_PRIVATE_KEY}`,
-        },
-        body: JSON.stringify({
-          service_id: EMAILJS_SERVICE_ID,
-          template_id: EMAILJS_AUTOREPLY_TEMPLATE_ID,
-          template_params: { from_name: name, from_email: email, message },
-          public_key: EMAILJS_PUBLIC_KEY,
-          user_id: EMAILJS_PUBLIC_KEY,
-        }),
-        timeout: 12_000,
-      });
-    } catch {
-      // non-fatal
-    }
+    return jsonError(
+      502,
+      "SMTP_ERROR",
+      "Unable to send email via SMTP.",
+      { detail: String(err) },
+    );
   }
 
   console.info("[contact][ok]", { requestId, name, email, ip });
