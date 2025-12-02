@@ -23,11 +23,12 @@
     "clsx": "^2.1.1",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.5.0",
+    "google-gax": "^5.0.6",
     "next": "^16.0.7",
+    "nodemailer": "^7.0.11",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
-    "react-google-recaptcha": "^3.1.0",
-    "nodemailer": "^7.0.11" 
+    "react-google-recaptcha": "^3.1.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",
