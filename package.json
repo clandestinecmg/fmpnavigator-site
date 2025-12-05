@@ -17,7 +17,6 @@
     "fix": "eslint . --fix"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "@googlemaps/js-api-loader": "^2.0.1",
     "@sentry/nextjs": "^10.27.0",
     "clsx": "^2.1.1",
