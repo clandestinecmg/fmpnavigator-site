@@ -38,7 +38,7 @@
     "@types/react-dom": "^19",
     "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9.39.0",
-    "eslint-config-next": "^16.0.6",
+    "eslint-config-next": "^16.0.7",
     "local-ssl-proxy": "^2.0.5",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.20.6",
