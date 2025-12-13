@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.1",
-    "@sentry/nextjs": "^10.29.0",
+    "@sentry/nextjs": "^10.30.0",
     "clsx": "^2.1.1",
     "firebase": "^12.6.0",
     "firebase-admin": "^13.5.0",
